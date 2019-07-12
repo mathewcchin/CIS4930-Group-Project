@@ -2,6 +2,7 @@ import sys
 import pygame
 import math  # for rotation angle calculation
 import random
+from pygame.sprite import Group  # for grouping multiple objects based on pygame.sprite
 from bullet_pistol import BulletPistol
 from setting import Settings
 from player import PlayerPistol
@@ -18,20 +19,34 @@ def run_game(screen, game_settings):
     :return: Null
     """
 
+    # # create a game setting object
+    # game_settings = Settings()
+    #
+    # # initialize pygame and the main screen
+    # pygame.init()
+    # screen = pygame.display.set_mode((game_settings.screen_width, game_settings.screen_height))
+    # pygame.display.set_caption(game_settings.caption)
+
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg")
     player = PlayerPistol(screen, game_settings)
 
+    # create Group() object to store bullets that was shot
+    bullets_pistol = Group()
+
     # start the main loop of the game
     while True:
         # check event
-        check_events(player)
+        check_events(player, bullets_pistol, game_settings, screen)
 
         # update player stats
         player.update()
 
+        # update bullets
+        bullets_pistol.update()
+
         # update screen
-        update_screen(background, player, screen)
+        update_screen(background, player, screen, bullets_pistol)
 
 
 def blit_player(player, screen):
@@ -63,15 +78,15 @@ def blit_player(player, screen):
     mouse_position = pygame.mouse.get_pos()
     # calculate angle, 1 rad = 57.29 degrees
     angle = math.atan2(player.rect.centery - mouse_position[1], player.rect.centerx - mouse_position[0]) * 57.29
-    # rotate player's image surface
-    player_rotated_image = pygame.transform.rotate(player.image, 180 - angle)
+    # rotate player's image surface and store rotated image in player's object
+    player.rotated_image = pygame.transform.rotate(player.image, 180 - angle)
 
-    # find out where to blit the rotated image (coordinate of the upper left corner)
-    player_updated_rect = (player.rect.centerx - player_rotated_image.get_rect().width / 2,
-                           player.rect.centery - player_rotated_image.get_rect().height / 2)
+    # find out where to blit the rotated image (coordinate of the upper left corner), store the updated rect in player's object
+    player.updated_rect = (player.rect.centerx - player.rotated_image.get_rect().width / 2,
+                           player.rect.centery - player.rotated_image.get_rect().height / 2)
 
     # blit the new position
-    screen.blit(player_rotated_image, player_updated_rect)
+    screen.blit(player.rotated_image, player.updated_rect)
 
 
 def check_keydown_events(event, player):
@@ -106,15 +121,26 @@ def check_keyup_events(event, player):
         player.moving_right = False
 
 
-def check_mousedown(event):
+def check_mousedown(event, player, bullets, game_settings, screen):
+    """
+    Parameter:
+        player: used to calculate the position and angle of the bullet
+        bullets: will add bullet to this group, if left mouse clicked
+    """
+
     # left click
-    if event.button == 1:
-        s = pygame.mixer.Sound('sfx/weapons/p228.wav')
+    if event.button == 1 and len(bullets.sprites()) < 1:
+        # play the shooting sound at channel 1
+        pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
         pisto_channel = pygame.mixer.Channel(1)
-        pisto_channel.play(s)
+        pisto_channel.play(pistol_sound)
+
+        # create a pistol bullet and add to bullets
+        new_bullet = BulletPistol(game_settings, screen, player)
+        bullets.add(new_bullet)
 
 
-def check_events(player):
+def check_events(player, bullets, game_settings, screen):
     """
     Check the broad category and call corresponding methods to do the specific work
     """
@@ -129,64 +155,29 @@ def check_events(player):
             check_keyup_events(event, player)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            check_mousedown(event)
+            check_mousedown(event, player, bullets, game_settings, screen)
 
 
-def update_screen(background, player, screen):
+def update_screen(background, player, screen, bullets):
     """
     Redraw screens (after items on the screen are updated)
     """
-
-    # plot background
+    # draw background
     screen.blit(background, (0, 0))
 
     # update and draw player's character
     blit_player(player, screen)
 
+    # blit each bullet, delete it if out of screen (using a copy)
+    for bullet in bullets.copy().sprites():
+        if bullet.rect.bottom < 0 or bullet.rect.top > screen.get_height() or bullet.rect.left > screen.get_width() or bullet.rect.right < 0:  # out of screen
+            bullets.remove(bullet)
+        else:
+            bullet.blit_bullet()
+
     # draw the updated screen
     pygame.display.flip()
 
-
-def text_format(message, textFont, textSize, textColor):
-    newFont = pygame.font.Font(textFont, textSize)
-    newText = newFont.render(message, 0, textColor)
-    return newText
-
-
-def user_settings(screen, game_settings):
-    print("user settings:")
-
-    # screen.fill(game_settings.color_black)
-
-    # creating player instruction
-    instructions = text_format("Instructions", game_settings.font, 75, game_settings.color_black)
-    movement_instructions = text_format("Movement . . . .", game_settings.font, 70, game_settings.color_black)
-    move_up = text_format("up. . . . . w key", game_settings, 60, game_settings.color_black)
-    move_down = text_format("down. . . . . s key", game_settings, 60, game_settings.color_black)
-    move_left = text_format("left. . . . . a key", game_settings, 60, game_settings.color_black)
-    move_right = text_format("right. . . . . d key", game_settings, 60, game_settings.color_black)
-    shooting_instructions = text_format("shoot . . . . spacebar", game_settings, 70, game_settings.color_black)
-
-    #
-    instruction_rect = instructions.get_rect()
-    movement_instructions_rect = movement_instructions.get_rect()
-    move_up_rect = move_up.get_rect()
-    move_down_rect = move_down.get_rect()
-    move_left_rect = move_left.get_rect()
-    move_right_rect = move_right.get_rect()
-    shooting_instructions_rect = shooting_instructions.get_rect()
-
-    # adding instructions to the screen
-    screen.blit(instructions, (game_settings.screen_width / 2 - (instruction_rect[2] / 2), 80))
-    screen.blit(movement_instructions, (game_settings.screen_width / 2 - (movement_instructions_rect[2] / 2), 100))
-    screen.blit(move_up, (game_settings.screen_width / 2 - (move_up_rect[2] / 2), 80))
-    screen.blit(move_down, (game_settings.screen_width / 2 - (move_down_rect[2] / 2), 80))
-    screen.blit(move_left, (game_settings.screen_width / 2 - (move_left_rect[2] / 2), 80))
-    screen.blit(move_right, (game_settings.screen_width / 2 - (move_right_rect[2] / 2), 80))
-    screen.blit(shooting_instructions, (game_settings.screen_width / 2 - (shooting_instructions_rect[2] / 2), 80))
-
-    # draw the updated screen
-    pygame.display.update()
 
 def welcome_screen(game_settings, screen):
     # Game sounds:
@@ -197,6 +188,7 @@ def welcome_screen(game_settings, screen):
 
     pygame.mixer.music.load("img/Power Bots Loop.wav")
     pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.5)
 
     # key click noise:
     # Menu_Navigate_03.wav
@@ -204,42 +196,35 @@ def welcome_screen(game_settings, screen):
     # https://freesound.org/people/LittleRobotSoundFactory/sounds/270315/
     key_sound = pygame.mixer.Sound("img/key_sound.wav")
 
+    # Colors
+    white = (255, 255, 255)
+    black = (0, 0, 0)
+    grey = (192, 192, 192)
+
     # Game Fonts
     font = game_settings.font
 
     # Game FPS
-    clock =
+    clock = pygame.time.Clock()
     FPS = 30
 
     # Main Menu Loop
-    selected = "new game"
+    selected = "start"
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if selected == "new game" and event.key == pygame.K_UP:
+                if selected == "settings" and event.key == pygame.K_UP:
                     key_sound.play()
-                    selected = "quit"
-
-                elif selected == "load game" and event.key == pygame.K_UP:
-                    key_sound.play()
-                    selected = "new game"
-
-                elif selected == "settings" and event.key == pygame.K_UP:
-                    key_sound.play()
-                    selected = "load game"
+                    selected = "start"
 
                 elif selected == "quit" and event.key == pygame.K_UP:
                     key_sound.play()
                     selected = "settings"
 
-                elif selected == "new game" and event.key == pygame.K_DOWN:
-                    key_sound.play()
-                    selected = "load game"
-
-                elif selected == "load game" and event.key == pygame.K_DOWN:
+                elif selected == "start" and event.key == pygame.K_DOWN:
                     key_sound.play()
                     selected = "settings"
 
@@ -247,17 +232,11 @@ def welcome_screen(game_settings, screen):
                     key_sound.play()
                     selected = "quit"
 
-                elif selected == "quit" and event.key == pygame.K_DOWN:
-                    key_sound.play()
-                    selected = "new game"
-
                 if event.key == pygame.K_RETURN:
-                    if selected == "new game":
+                    if selected == "start":
                         run_game(screen, game_settings)
-                    if selected == "load game":
-                        print("loading game")
                     if selected == "settings":
-                        user_settings(screen, game_settings)
+                        user_settings()
                     if selected == "quit":
                         sys.exit()
 
@@ -265,39 +244,43 @@ def welcome_screen(game_settings, screen):
         menu = pygame.image.load('img/bg.jpg')
         screen.blit(menu, (0, 0))
 
-        title = text_format("Alien Invasion", font, 90, game_settings.color_black)
-        if selected == "new game":
-            text_new_game = text_format("NEW GAME", font, 75, game_settings.color_white)
+        title = text_format("Alien Invasion", font, 90, black)
+        if selected == "start":
+            text_start = text_format("START", font, 75, white)
         else:
-            text_new_game = text_format("NEW GAME", font, 75, game_settings.color_black)
-
-        if selected == "load game":
-            text_load_game = text_format("LOAD GAME", font, 75, game_settings.color_white)
-        else:
-            text_load_game = text_format("LOAD GAME", font, 75, game_settings.color_black)
+            text_start = text_format("START", font, 75, black)
 
         if selected == "settings":
-            text_settings = text_format("SETTINGS", font, 75, game_settings.color_white)
+            text_settings = text_format("SETTINGS", font, 75, white)
         else:
-            text_settings = text_format("SETTINGS", font, 75, game_settings.color_black)
+            text_settings = text_format("SETTINGS", font, 75, black)
 
         if selected == "quit":
-            text_quit = text_format("QUIT", font, 75, game_settings.color_white)
+            text_quit = text_format("QUIT", font, 75, white)
         else:
-            text_quit = text_format("QUIT", font, 75, game_settings.color_black)
+            text_quit = text_format("QUIT", font, 75, black)
 
         title_rect = title.get_rect()
-        new_game_rect = text_new_game.get_rect()
-        load_game_rect = text_load_game.get_rect()
+        start_rect = text_start.get_rect()
         settings_rect = text_settings.get_rect()
         quit_rect = text_quit.get_rect()
 
         # Main Menu Text
         screen.blit(title, (game_settings.screen_width / 2 - (title_rect[2] / 2), 80))
-        screen.blit(text_new_game, (game_settings.screen_width / 2 - (new_game_rect[2] / 2), 300))
-        screen.blit(text_load_game, (game_settings.screen_width / 2 - (load_game_rect[2] / 2), 350))
-        screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 400))
-        screen.blit(text_quit, (game_settings.screen_width / 2 - (quit_rect[2] / 2), 450))
+        screen.blit(text_start, (game_settings.screen_width / 2 - (start_rect[2] / 2), 300))
+        screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 350))
+        screen.blit(text_quit, (game_settings.screen_width / 2 - (quit_rect[2] / 2), 400))
         pygame.display.update()
         clock.tick(FPS)
+
+
+def text_format(message, textFont, textSize, textColor):
+    newFont = pygame.font.Font(textFont, textSize)
+    newText = newFont.render(message, 0, textColor)
+    return newText
+
+
+def user_settings():
+    print("its working")
+    # pygame.draw.rect(screen, (200, 150, 100, 50))
 
