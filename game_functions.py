@@ -19,14 +19,6 @@ def run_game(screen, game_settings):
     :return: Null
     """
 
-    # # create a game setting object
-    # game_settings = Settings()
-    #
-    # # initialize pygame and the main screen
-    # pygame.init()
-    # screen = pygame.display.set_mode((game_settings.screen_width, game_settings.screen_height))
-    # pygame.display.set_caption(game_settings.caption)
-
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg")
     player = PlayerPistol(screen, game_settings)
@@ -105,6 +97,11 @@ def check_keydown_events(event, player):
 
     if event.key == pygame.K_d:
         player.moving_right = True
+
+    # Implementation of a pause function:
+    if event.key == pygame.K_ESCAPE:
+        pass
+
 
 
 def check_keyup_events(event, player):
@@ -187,7 +184,7 @@ def welcome_screen(game_settings, screen):
     # https://www.dl-sounds.com/royalty-free/power-bots-loop/
 
     pygame.mixer.music.load("img/Power Bots Loop.wav")
-    pygame.mixer.music.play(-1)
+    # pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.5)
 
     # key click noise:
@@ -300,7 +297,61 @@ def text_format(message, textFont, textSize, textColor):
     return newText
 
 
-def user_settings():
-    print("its working")
-    # pygame.draw.rect(screen, (200, 150, 100, 50))
+def user_settings(screen, game_settings):
+    # create objects that will displayed on game main screen
+    background = pygame.image.load("img/bg.jpg")
 
+    while True:
+        screen.blit(background, (0, 0))
+
+        # creating player instruction
+        instructions = text_format("Instructions", game_settings.font, 75, game_settings.color_black)
+        movement_instructions = text_format("Movement:", game_settings.font, 60, game_settings.color_black)
+        move_up = text_format("move up . . . . . . . . . . w key", game_settings.font, 50, game_settings.color_black)
+        move_down = text_format("move down . . . . . . . . s key", game_settings.font, 50, game_settings.color_black)
+        move_left = text_format("move left . . . . . . . . . a key", game_settings.font, 50, game_settings.color_black)
+        move_right = text_format("move right . . . . . . . . d key", game_settings.font, 50, game_settings.color_black)
+
+        shooting_instructions = text_format("Shooting and aim . . .", game_settings.font, 60, game_settings.color_black)
+        shoot = text_format("shoot . . . . . . . . . . left click", game_settings.font, 50, game_settings.color_black)
+        aim = text_format("aim . . . . . . . mouse rotation", game_settings.font, 50, game_settings.color_black)
+
+        exit_screen = text_format("Press esc to return to main menu", game_settings.font, 60, game_settings.color_black)
+
+        instruction_rect = instructions.get_rect()
+        movement_instructions_rect = movement_instructions.get_rect()
+        move_up_rect = move_up.get_rect()
+        move_down_rect = move_down.get_rect()
+        move_left_rect = move_left.get_rect()
+        move_right_rect = move_right.get_rect()
+
+        shooting_instructions_rect = shooting_instructions.get_rect()
+        shoot_rect = shoot.get_rect()
+        aim_rect = aim.get_rect()
+
+        exit_screen_rect = exit_screen.get_rect()
+
+        # adding instructions to the screen
+        screen.blit(instructions, (game_settings.screen_width / 2 - (instruction_rect[2] / 2), 80))
+        screen.blit(movement_instructions, (game_settings.screen_width / 2 - (movement_instructions_rect[2]), 160))
+        screen.blit(move_up, (game_settings.screen_width / 2 - (move_up_rect[2] / 2), 220))
+        screen.blit(move_down, (game_settings.screen_width / 2 - (move_down_rect[2] / 2), 260))
+        screen.blit(move_left, (game_settings.screen_width / 2 - (move_left_rect[2] / 2), 300))
+        screen.blit(move_right, (game_settings.screen_width / 2 - (move_right_rect[2] / 2), 340))
+
+        screen.blit(shooting_instructions, (game_settings.screen_width / 2 - (shooting_instructions_rect[2] / 2), 400))
+        screen.blit(shoot, (game_settings.screen_width / 2 - (shoot_rect[2] / 2), 460))
+        screen.blit(aim, (game_settings.screen_width / 2 - (aim_rect[2] / 2), 500))
+
+        screen.blit(exit_screen, (game_settings.screen_width / 2 - (exit_screen_rect[2] / 2), 600))
+
+        # draw the updated screen
+        pygame.display.flip()
+
+        # checking for player input to quit instruction screen
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            elif event.key == pygame.K_ESCAPE:
+                return
