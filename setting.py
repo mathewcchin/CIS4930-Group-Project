@@ -53,3 +53,7 @@ class Settings:
 
         # welcome menu settings
         self.font = "img/INVASION2000.TTF"
+
+        # Colors
+        self.color_white = (255, 255, 255)
+        self.color_black = (0, 0, 0)

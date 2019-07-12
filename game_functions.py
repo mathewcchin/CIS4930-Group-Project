@@ -196,11 +196,6 @@ def welcome_screen(game_settings, screen):
     # https://freesound.org/people/LittleRobotSoundFactory/sounds/270315/
     key_sound = pygame.mixer.Sound("img/key_sound.wav")
 
-    # Colors
-    white = (255, 255, 255)
-    black = (0, 0, 0)
-    grey = (192, 192, 192)
-
     # Game Fonts
     font = game_settings.font
 
@@ -209,22 +204,34 @@ def welcome_screen(game_settings, screen):
     FPS = 30
 
     # Main Menu Loop
-    selected = "start"
+    selected = "new game"
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if selected == "settings" and event.key == pygame.K_UP:
+                if selected == "new game" and event.key == pygame.K_UP:
                     key_sound.play()
-                    selected = "start"
+                    selected = "quit"
+
+                elif selected == "load game" and event.key == pygame.K_UP:
+                    key_sound.play()
+                    selected = "new game"
+
+                elif selected == "settings" and event.key == pygame.K_UP:
+                    key_sound.play()
+                    selected = "load game"
 
                 elif selected == "quit" and event.key == pygame.K_UP:
                     key_sound.play()
                     selected = "settings"
 
-                elif selected == "start" and event.key == pygame.K_DOWN:
+                elif selected == "new game" and event.key == pygame.K_DOWN:
+                    key_sound.play()
+                    selected = "load game"
+
+                elif selected == "load game" and event.key == pygame.K_DOWN:
                     key_sound.play()
                     selected = "settings"
 
@@ -232,11 +239,17 @@ def welcome_screen(game_settings, screen):
                     key_sound.play()
                     selected = "quit"
 
+                elif selected == "quit" and event.key == pygame.K_DOWN:
+                    key_sound.play()
+                    selected = "new game"
+
                 if event.key == pygame.K_RETURN:
-                    if selected == "start":
+                    if selected == "new game":
                         run_game(screen, game_settings)
+                    if selected == "load game":
+                        print("loading game")
                     if selected == "settings":
-                        user_settings()
+                        user_settings(screen, game_settings)
                     if selected == "quit":
                         sys.exit()
 
@@ -244,32 +257,39 @@ def welcome_screen(game_settings, screen):
         menu = pygame.image.load('img/bg.jpg')
         screen.blit(menu, (0, 0))
 
-        title = text_format("Alien Invasion", font, 90, black)
-        if selected == "start":
-            text_start = text_format("START", font, 75, white)
+        title = text_format("Alien Invasion", font, 90, game_settings.color_black)
+        if selected == "new game":
+            text_new_game = text_format("NEW GAME", font, 75, game_settings.color_white)
         else:
-            text_start = text_format("START", font, 75, black)
+            text_new_game = text_format("NEW GAME", font, 75, game_settings.color_black)
+
+        if selected == "load game":
+            text_load_game = text_format("LOAD GAME", font, 75, game_settings.color_white)
+        else:
+            text_load_game = text_format("LOAD GAME", font, 75, game_settings.color_black)
 
         if selected == "settings":
-            text_settings = text_format("SETTINGS", font, 75, white)
+            text_settings = text_format("SETTINGS", font, 75, game_settings.color_white)
         else:
-            text_settings = text_format("SETTINGS", font, 75, black)
+            text_settings = text_format("SETTINGS", font, 75, game_settings.color_black)
 
         if selected == "quit":
-            text_quit = text_format("QUIT", font, 75, white)
+            text_quit = text_format("QUIT", font, 75, game_settings.color_white)
         else:
-            text_quit = text_format("QUIT", font, 75, black)
+            text_quit = text_format("QUIT", font, 75, game_settings.color_black)
 
         title_rect = title.get_rect()
-        start_rect = text_start.get_rect()
+        new_game_rect = text_new_game.get_rect()
+        load_game_rect = text_load_game.get_rect()
         settings_rect = text_settings.get_rect()
         quit_rect = text_quit.get_rect()
 
         # Main Menu Text
         screen.blit(title, (game_settings.screen_width / 2 - (title_rect[2] / 2), 80))
-        screen.blit(text_start, (game_settings.screen_width / 2 - (start_rect[2] / 2), 300))
-        screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 350))
-        screen.blit(text_quit, (game_settings.screen_width / 2 - (quit_rect[2] / 2), 400))
+        screen.blit(text_new_game, (game_settings.screen_width / 2 - (new_game_rect[2] / 2), 300))
+        screen.blit(text_load_game, (game_settings.screen_width / 2 - (load_game_rect[2] / 2), 350))
+        screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 400))
+        screen.blit(text_quit, (game_settings.screen_width / 2 - (quit_rect[2] / 2), 450))
         pygame.display.update()
         clock.tick(FPS)
 
