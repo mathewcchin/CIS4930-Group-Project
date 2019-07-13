@@ -28,13 +28,14 @@ class Settings:
 
         # screen settings
         self.caption = "shooting game test"
-        self.screen_width = 1280
-        self.screen_height = 720
+        self.screen_width = 1366
+        self.screen_height = 768
 
         # main character settings (carrying pistol)
         self.character_speed = 3
         self.character_acceleration_ratio = 5
         self.max_health_point = 200
+        self.allowed_margin = 20  # minimum allowed distance of player to edge 
 
         # enemy settings
         self.enemy_speed = 3
@@ -42,7 +43,7 @@ class Settings:
         self.enemy_timer_1 = 0
 
         # bullet_pistol settings
-        self.bullet_pistol_speed = 40
+        self.bullet_pistol_speed = 80
 
         # sound channels (playback channels)
         self.foot_step_channel = 0
@@ -53,6 +54,7 @@ class Settings:
 
         # welcome menu settings
         self.font = "img/INVASION2000.TTF"
+        self.FPS = 30
 
         # Colors
         self.color_white = (255, 255, 255)

@@ -31,7 +31,7 @@ def run_game(screen, game_settings):
         # check event
         check_events(player, bullets_pistol, game_settings, screen)
 
-        # update player stats
+        # update player stats (rotation and position)
         player.update()
 
         # update bullets
@@ -39,46 +39,6 @@ def run_game(screen, game_settings):
 
         # update screen
         update_screen(background, player, screen, bullets_pistol)
-
-
-def blit_player(player, screen):
-    """
-    This function deals with the rotation of the player's character along with mouse
-
-    Ideas:
-        To display the player onto the screen, we have to call screen.blit(image, rect). The image is the "surface" of the player, while the rect is the rectangle of the player. Rotation will only affect the rotated angle of player's image surface. To achieve this, we first get the position of mouse pointer using:
-            pygame.mouse.get_pos()
-        This will return a tuple, which is (x, y), containing x and y value of mouse's position. Then we can get the coordinate of player.rect's center:
-            (player.rect.centerx, player.rect.centery)
-        We have two points, which is the mouse pointer and the center of player's character's center. We can obtain the rotation angle:
-            angle = math.atan2(player.rect.centery - mouse_position[1], player.rect.centerx - mouse_position[0]) * 57.29
-
-        Pay attention the angle returned by math.atan2() is in rad, we have to convert it to degrees.
-
-        Then we rotate player's image to reflect this change. One important thing is, we shouldn't modify the original image (stored in player's object). Here, we use another variable to hold the rotated player's image:
-            player_rotated_image = pygame.transform.rotate(player.image, 180 - angle)
-
-        Then, we blit this rotated image to the screen, rather than the original image. This is because we have to keep the original image so we can use it as a reference to calculate the rotated angle.
-
-        Before we blit, we have to get the new rect. When the image is rotated, "the image will be padded larger to hold the new size", which means a larger rect is created that surrounds the image.
-
-    Parameters:
-        player:
-    """
-
-    # get mouse coordinate
-    mouse_position = pygame.mouse.get_pos()
-    # calculate angle, 1 rad = 57.29 degrees
-    angle = math.atan2(player.rect.centery - mouse_position[1], player.rect.centerx - mouse_position[0]) * 57.29
-    # rotate player's image surface and store rotated image in player's object
-    player.rotated_image = pygame.transform.rotate(player.image, 180 - angle)
-
-    # find out where to blit the rotated image (coordinate of the upper left corner), store the updated rect in player's object
-    player.updated_rect = (player.rect.centerx - player.rotated_image.get_rect().width / 2,
-                           player.rect.centery - player.rotated_image.get_rect().height / 2)
-
-    # blit the new position
-    screen.blit(player.rotated_image, player.updated_rect)
 
 
 def check_keydown_events(event, player):
@@ -101,7 +61,6 @@ def check_keydown_events(event, player):
     # Implementation of a pause function:
     if event.key == pygame.K_ESCAPE:
         pass
-
 
 
 def check_keyup_events(event, player):
@@ -135,6 +94,9 @@ def check_mousedown(event, player, bullets, game_settings, screen):
         # create a pistol bullet and add to bullets
         new_bullet = BulletPistol(game_settings, screen, player)
         bullets.add(new_bullet)
+        
+        # show fire frame
+        player.display_firing()
 
 
 def check_events(player, bullets, game_settings, screen):
@@ -162,8 +124,8 @@ def update_screen(background, player, screen, bullets):
     # draw background
     screen.blit(background, (0, 0))
 
-    # update and draw player's character
-    blit_player(player, screen)
+    # draw player's character to screen
+    screen.blit(player.rotated_image, player.updated_rect)
 
     # blit each bullet, delete it if out of screen (using a copy)
     for bullet in bullets.copy().sprites():
@@ -172,7 +134,7 @@ def update_screen(background, player, screen, bullets):
         else:
             bullet.blit_bullet()
 
-    # draw the updated screen
+    # draw the updated screen on the game window
     pygame.display.flip()
 
 
@@ -183,7 +145,7 @@ def welcome_screen(game_settings, screen):
     # by DL-Sounds
     # https://www.dl-sounds.com/royalty-free/power-bots-loop/
 
-    pygame.mixer.music.load("img/Power Bots Loop.wav")
+    pygame.mixer.music.load("sfx/power_bots_loop.wav")
     # pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.5)
 
@@ -191,17 +153,17 @@ def welcome_screen(game_settings, screen):
     # Menu_Navigate_03.wav
     # by LittleRobotSoundFactory
     # https://freesound.org/people/LittleRobotSoundFactory/sounds/270315/
-    key_sound = pygame.mixer.Sound("img/key_sound.wav")
+    key_sound = pygame.mixer.Sound("sfx/key_sound.wav")
 
     # Game Fonts
     font = game_settings.font
 
     # Game FPS
     clock = pygame.time.Clock()
-    FPS = 30
+    FPS = game_settings.FPS
 
-    # Main Menu Loop
-    selected = "new game"
+    # Main Menu Loop to display menus
+    selected = "new game"  # store current selected option
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -254,7 +216,7 @@ def welcome_screen(game_settings, screen):
         menu = pygame.image.load('img/bg.jpg')
         screen.blit(menu, (0, 0))
 
-        title = text_format("Alien Invasion", font, 90, game_settings.color_black)
+        title = text_format(game_settings.caption, font, 90, game_settings.color_black)
         if selected == "new game":
             text_new_game = text_format("NEW GAME", font, 75, game_settings.color_white)
         else:
@@ -345,13 +307,13 @@ def user_settings(screen, game_settings):
 
         screen.blit(exit_screen, (game_settings.screen_width / 2 - (exit_screen_rect[2] / 2), 600))
 
-        # draw the updated screen
-        pygame.display.flip()
-
         # checking for player input to quit instruction screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
             elif event.key == pygame.K_ESCAPE:
-                return
+                return                
+        
+        # draw the updated screen
+        pygame.display.flip()

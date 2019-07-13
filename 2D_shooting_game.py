@@ -11,5 +11,6 @@ pygame.init()
 screen = pygame.display.set_mode((game_settings.screen_width, game_settings.screen_height))
 pygame.display.set_caption(game_settings.caption)
 
-# run_game()
-gf.welcome_screen(game_settings, screen)
+# run welcome screen
+# gf.welcome_screen(game_settings, screen)
+gf.run_game(screen, game_settings)

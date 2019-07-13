@@ -1,0 +1,1 @@
+Get-ChildItem *.jpg |Rename-Item -NewName { $_.name -replace '\(已去底\)', '' }
