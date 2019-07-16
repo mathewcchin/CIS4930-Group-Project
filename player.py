@@ -53,6 +53,10 @@ class PlayerPistol:
         self.moving_left = False
         self.moving_up = False
         self.moving_down = False
+        
+        # record the time of last shooting
+        self.last_shooting_time = 0
+        
 
     def update(self):
         """
@@ -63,7 +67,7 @@ class PlayerPistol:
             
         """
         # play random foot step sound while moving flag is true
-        # if the character is near the boundary, don't play sound
+        # if the character is trying to move out of the boundary, don't play sound
         if (self.moving_down and self.rect.bottom + self.game_settings.allowed_margin < self.screen_rect.bottom) or (
                 self.moving_left and self.rect.left > self.game_settings.allowed_margin) or (
                 self.moving_right and self.rect.right + self.game_settings.allowed_margin < self.screen_rect.right) or (
@@ -93,15 +97,15 @@ class PlayerPistol:
         mouse_position = pygame.mouse.get_pos()
         
         # calculate angle using the initial rect 
-        # 1 rad = 57.29 degrees
-        self.angle = math.atan2(self.rect.centery - mouse_position[1], self.rect.centerx - mouse_position[0]) * 57.29
+        self.angle = math.degrees(math.atan2(self.rect.centery - mouse_position[1], self.rect.centerx - mouse_position[0]))
         
         # rotate player's image surface and store rotated image in player's object
         self.rotated_image = pygame.transform.rotate(self.image, 180 - self.angle)
 
-        # find out where to blit the rotated image (coordinate of the upper left corner), store the updated rect in player's object
-        self.updated_rect = (self.rect.centerx - self.rotated_image.get_rect().width / 2,
-                               self.rect.centery - self.rotated_image.get_rect().height / 2)
+        # find out where to blit the rotated image (coordinate of the upper left corner), store the updated rect in player's object        
+        self.updated_rect = self.rotated_image.get_rect()
+        self.updated_rect.centerx = self.rect.centerx
+        self.updated_rect.centery = self.rect.centery
         
 
     

@@ -27,7 +27,7 @@ class Settings:
         """initialize game setting attributes"""
 
         # screen settings
-        self.caption = "shooting game test"
+        self.caption = "Zombie Apocalypse"
         self.screen_width = 1366
         self.screen_height = 768
 
@@ -37,13 +37,13 @@ class Settings:
         self.max_health_point = 200
         self.allowed_margin = 20  # minimum allowed distance of player to edge 
 
-        # enemy settings
-        self.enemy_speed = 3
-        self.enemy_timer = 100
-        self.enemy_timer_1 = 0
+        # zombie settings
+        self.zombie_speed = 2
+        self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
 
         # bullet_pistol settings
-        self.bullet_pistol_speed = 80
+        self.bullet_pistol_speed = 70
+        self.pistol_shooting_interval = 300  # shooting interval of pistol, in ms
 
         # sound channels (playback channels)
         self.foot_step_channel = 0

@@ -6,6 +6,7 @@ from pygame.sprite import Group  # for grouping multiple objects based on pygame
 from bullet_pistol import BulletPistol
 from setting import Settings
 from player import PlayerPistol
+from zombie import Zombie
 
 
 def run_game(screen, game_settings):
@@ -22,6 +23,9 @@ def run_game(screen, game_settings):
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg")
     player = PlayerPistol(screen, game_settings)
+    zombie = Zombie(game_settings, screen, player)
+    screen.blit(zombie.rotated_image, zombie.updated_rect)
+    pygame.display.flip()
 
     # create Group() object to store bullets that was shot
     bullets_pistol = Group()
@@ -33,12 +37,15 @@ def run_game(screen, game_settings):
 
         # update player stats (rotation and position)
         player.update()
+        
+        # update zombie
+        zombie.update()
 
         # update bullets
         bullets_pistol.update()
 
         # update screen
-        update_screen(background, player, screen, bullets_pistol)
+        update_screen(background, player, zombie, screen, bullets_pistol)
 
 
 def check_keydown_events(event, player):
@@ -76,6 +83,17 @@ def check_keyup_events(event, player):
     if event.key == pygame.K_d:
         player.moving_right = False
 
+def is_mouse_in_player(player):
+    """
+    Check if the mouse is very close to player 
+    """
+    mouse_position = pygame.mouse.get_pos()
+    
+    if mouse_position[0] >= player.updated_rect.left and mouse_position[0] <= player.updated_rect.right and mouse_position[1] >= player.updated_rect.top and mouse_position[1] <= player.updated_rect.bottom:
+        return True
+    
+    return False
+
 
 def check_mousedown(event, player, bullets, game_settings, screen):
     """
@@ -85,7 +103,7 @@ def check_mousedown(event, player, bullets, game_settings, screen):
     """
 
     # left click
-    if event.button == 1 and len(bullets.sprites()) < 1:
+    if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(player):
         # play the shooting sound at channel 1
         pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
         pisto_channel = pygame.mixer.Channel(1)
@@ -97,6 +115,9 @@ def check_mousedown(event, player, bullets, game_settings, screen):
         
         # show fire frame
         player.display_firing()
+        
+        # update player's last shooting time 
+        player.last_shooting_time = pygame.time.get_ticks()
 
 
 def check_events(player, bullets, game_settings, screen):
@@ -117,7 +138,7 @@ def check_events(player, bullets, game_settings, screen):
             check_mousedown(event, player, bullets, game_settings, screen)
 
 
-def update_screen(background, player, screen, bullets):
+def update_screen(background, player, zombie, screen, bullets):
     """
     Redraw screens (after items on the screen are updated)
     """
@@ -127,13 +148,17 @@ def update_screen(background, player, screen, bullets):
     # draw player's character to screen
     screen.blit(player.rotated_image, player.updated_rect)
 
-    # blit each bullet, delete it if out of screen (using a copy)
+    # draw zombies to screen
+    screen.blit(zombie.rotated_image, zombie.updated_rect)
+
+    # blit each bullet, delete it if it is out of screen 
     for bullet in bullets.copy().sprites():
         if bullet.rect.bottom < 0 or bullet.rect.top > screen.get_height() or bullet.rect.left > screen.get_width() or bullet.rect.right < 0:  # out of screen
             bullets.remove(bullet)
         else:
             bullet.blit_bullet()
 
+            
     # draw the updated screen on the game window
     pygame.display.flip()
 

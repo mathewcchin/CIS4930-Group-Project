@@ -1,0 +1,18 @@
+Shooting animation added
+    shooting coil
+    a flashing at the gun will display when shooting
+
+Pistol shooting mechanism changed
+    Now an new attribute in Settings class has been added: pistol_shooting_interval.
+    This attribute will control how fast player can shoot their pistols.
+    It is in millisecond.
+
+    An new attribute in PlayerPistol class has been added: last_shooting_time
+    It will record when did the player shoot last time. When next shooting event is
+    triggered, we'll check if the time interval between the two shootings are larger
+    than the allowed value defined in Settings class. If so, create new bullet, otherwise
+    do nothing.
+
+Player now can't shoot when mouse is inside the character
+
+Zombie added
