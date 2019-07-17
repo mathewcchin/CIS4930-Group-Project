@@ -23,9 +23,6 @@ def run_game(screen, game_settings):
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg")
     player = PlayerPistol(screen, game_settings)
-    # zombie = Zombie(game_settings, screen, player)
-    # screen.blit(zombie.rotated_image, zombie.updated_rect)
-    # pygame.display.flip()
 
     # create Group() object to store bullets that was shot
     bullets_pistol = Group()
