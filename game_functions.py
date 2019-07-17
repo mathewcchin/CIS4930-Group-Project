@@ -23,29 +23,39 @@ def run_game(screen, game_settings):
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg")
     player = PlayerPistol(screen, game_settings)
-    zombie = Zombie(game_settings, screen, player)
-    screen.blit(zombie.rotated_image, zombie.updated_rect)
-    pygame.display.flip()
+    # zombie = Zombie(game_settings, screen, player)
+    # screen.blit(zombie.rotated_image, zombie.updated_rect)
+    # pygame.display.flip()
 
     # create Group() object to store bullets that was shot
     bullets_pistol = Group()
+
+    # create another Group() object to store zombies
+    zombies = Group()
+    last_spawn_time = pygame.time.get_ticks()  # record zombie spawn time
 
     # start the main loop of the game
     while True:
         # check event
         check_events(player, bullets_pistol, game_settings, screen)
 
+        # generate zombies
+        last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
+        
+        # delete zombies and bullets when zombie is shot by bullet
+        shoot_zombie(zombies, bullets_pistol)
+        
         # update player stats (rotation and position)
         player.update()
         
         # update zombie
-        zombie.update()
+        zombies.update()
 
         # update bullets
         bullets_pistol.update()
 
         # update screen
-        update_screen(background, player, zombie, screen, bullets_pistol)
+        update_screen(background, player, zombies, screen, bullets_pistol)
 
 
 def check_keydown_events(event, player):
@@ -82,6 +92,7 @@ def check_keyup_events(event, player):
 
     if event.key == pygame.K_d:
         player.moving_right = False
+
 
 def is_mouse_in_player(player):
     """
@@ -138,7 +149,28 @@ def check_events(player, bullets, game_settings, screen):
             check_mousedown(event, player, bullets, game_settings, screen)
 
 
-def update_screen(background, player, zombie, screen, bullets):
+def spawn_zombies(zombies, player, game_settings, screen,  last_spawn_time):
+    # if time interval is less than spawn time, do nothing
+    if pygame.time.get_ticks() - last_spawn_time < game_settings.spawn_time:
+        return last_spawn_time
+    
+    # if time interval is larger than spawn time, create a new zombie in zombies
+    new_zombie = Zombie(game_settings, screen, player)
+    zombies.add(new_zombie)
+    
+    # return new spawn time 
+    return pygame.time.get_ticks()
+
+
+def shoot_zombie(zombies, bullets):
+    for zombie in zombies.copy().sprites():
+        for bullet in bullets.copy().sprites():
+            if zombie.rect.colliderect(bullet.rect):
+                bullets.remove(bullet)
+                zombies.remove(zombie)
+
+
+def update_screen(background, player, zombies, screen, bullets):
     """
     Redraw screens (after items on the screen are updated)
     """
@@ -148,8 +180,9 @@ def update_screen(background, player, zombie, screen, bullets):
     # draw player's character to screen
     screen.blit(player.rotated_image, player.updated_rect)
 
-    # draw zombies to screen
-    screen.blit(zombie.rotated_image, zombie.updated_rect)
+    # draw each zombie to screen
+    for zombie in zombies:
+        zombie.blit_zombie()
 
     # blit each bullet, delete it if it is out of screen 
     for bullet in bullets.copy().sprites():
@@ -157,7 +190,6 @@ def update_screen(background, player, zombie, screen, bullets):
             bullets.remove(bullet)
         else:
             bullet.blit_bullet()
-
             
     # draw the updated screen on the game window
     pygame.display.flip()

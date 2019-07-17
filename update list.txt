@@ -15,4 +15,8 @@ Pistol shooting mechanism changed
 
 Player now can't shoot when mouse is inside the character
 
-Zombie added
+Zombie class added
+    Zombies will spawn at random positions around the screen. They will move to player's position.
+    Zombies always face to player
+
+Player can now shoot zombie

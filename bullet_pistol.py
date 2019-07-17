@@ -36,7 +36,7 @@ class BulletPistol(Sprite):
         self.angle_got = copy.copy(player.angle)
         
         # load bullet image and make rotated image
-        self.image = pygame.image.load("img/bullet_pistol.jpg")
+        self.image = pygame.image.load("img/bullet_pistol.png")
         self.rotated_image = pygame.transform.rotate(self.image, 360 - math.degrees(self.angle))
 
         # create a rect

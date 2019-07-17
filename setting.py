@@ -38,11 +38,12 @@ class Settings:
         self.allowed_margin = 20  # minimum allowed distance of player to edge 
 
         # zombie settings
-        self.zombie_speed = 2
+        self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
+        self.spawn_time = 1000  # time to spawn a zombie, in milliseconds
 
         # bullet_pistol settings
-        self.bullet_pistol_speed = 70
+        self.bullet_pistol_speed = 80
         self.pistol_shooting_interval = 300  # shooting interval of pistol, in ms
 
         # sound channels (playback channels)

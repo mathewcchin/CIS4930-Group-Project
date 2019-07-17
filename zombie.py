@@ -86,3 +86,9 @@ class Zombie(Sprite):
         # update position (moving zombie)
         self.rect.centerx -= math.cos(math.radians(self.angle)) * self.game_settings.zombie_speed
         self.rect.centery -= math.sin(math.radians(self.angle)) * self.game_settings.zombie_speed
+
+    def blit_zombie(self):
+        """
+        Blit the zombie to the screen
+        """
+        self.screen.blit(self.rotated_image, self.updated_rect)
