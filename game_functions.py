@@ -72,11 +72,6 @@ def check_keydown_events(event, player):
     if event.key == pygame.K_d:
         player.moving_right = True
 
-    # Implementation of a pause function:
-    if event.key == pygame.K_ESCAPE:
-        pass
-
-
 def check_keyup_events(event, player):
     if event.key == pygame.K_w:
         player.moving_up = False
@@ -93,13 +88,13 @@ def check_keyup_events(event, player):
 
 def is_mouse_in_player(player):
     """
-    Check if the mouse is very close to player 
+    Check if the mouse is very close to player
     """
     mouse_position = pygame.mouse.get_pos()
-    
+
     if mouse_position[0] >= player.updated_rect.left and mouse_position[0] <= player.updated_rect.right and mouse_position[1] >= player.updated_rect.top and mouse_position[1] <= player.updated_rect.bottom:
         return True
-    
+
     return False
 
 
@@ -120,11 +115,11 @@ def check_mousedown(event, player, bullets, game_settings, screen):
         # create a pistol bullet and add to bullets
         new_bullet = BulletPistol(game_settings, screen, player)
         bullets.add(new_bullet)
-        
+
         # show fire frame
         player.display_firing()
-        
-        # update player's last shooting time 
+
+        # update player's last shooting time
         player.last_shooting_time = pygame.time.get_ticks()
 
 
@@ -139,6 +134,10 @@ def check_events(player, bullets, game_settings, screen):
         if event.type == pygame.KEYDOWN:
             check_keydown_events(event, player)
 
+            # Implementation of a pause function:
+            if event.key == pygame.K_ESCAPE:
+                pause_game(screen, game_settings)
+
         if event.type == pygame.KEYUP:
             check_keyup_events(event, player)
 
@@ -150,12 +149,12 @@ def spawn_zombies(zombies, player, game_settings, screen,  last_spawn_time):
     # if time interval is less than spawn time, do nothing
     if pygame.time.get_ticks() - last_spawn_time < game_settings.spawn_time:
         return last_spawn_time
-    
+
     # if time interval is larger than spawn time, create a new zombie in zombies
     new_zombie = Zombie(game_settings, screen, player)
     zombies.add(new_zombie)
-    
-    # return new spawn time 
+
+    # return new spawn time
     return pygame.time.get_ticks()
 
 
@@ -181,18 +180,18 @@ def update_screen(background, player, zombies, screen, bullets):
     for zombie in zombies:
         zombie.blit_zombie()
 
-    # blit each bullet, delete it if it is out of screen 
+    # blit each bullet, delete it if it is out of screen
     for bullet in bullets.copy().sprites():
         if bullet.rect.bottom < 0 or bullet.rect.top > screen.get_height() or bullet.rect.left > screen.get_width() or bullet.rect.right < 0:  # out of screen
             bullets.remove(bullet)
         else:
             bullet.blit_bullet()
-            
+
     # draw the updated screen on the game window
     pygame.display.flip()
 
 
-def welcome_screen(game_settings, screen):
+def welcome_screen(screen, game_settings):
     # Game sounds:
     # Main Menu (Royalty Free Soundtrack):
     # Power Bots Loop
@@ -367,7 +366,106 @@ def user_settings(screen, game_settings):
                 sys.exit()
 
             elif event.key == pygame.K_ESCAPE:
-                return                
-        
+                return
+
         # draw the updated screen
         pygame.display.flip()
+
+
+def pause_game(screen, game_settings):
+    # creating player instruction
+    pause = text_format("Pause Game", game_settings.font, 100, game_settings.color_black)
+    pause_rect = pause.get_rect()
+    screen.blit(pause, (game_settings.screen_width / 2 - (pause_rect[2] / 2), 200))
+
+    key_sound = pygame.mixer.Sound('sfx/key_sound.wav')
+    clock = pygame.time.Clock()
+
+    selected = "Save Game"
+    while True:
+        # checking for player input to quit instruction screen
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+                elif event.key == pygame.K_DOWN and selected == "Save Game":
+                    key_sound.play()
+                    selected = "Game Settings"
+
+                elif event.key == pygame.K_DOWN and selected == "Game Settings":
+                    key_sound.play()
+                    selected = "Return to Main Menu"
+
+                elif event.key == pygame.K_DOWN and selected == "Return to Main Menu":
+                    key_sound.play()
+                    selected = "Exit Game"
+
+                elif event.key == pygame.K_DOWN and selected == "Exit Game":
+                    key_sound.play()
+                    selected = "Save Game"
+
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_UP and selected == "Game Settings":
+                        key_sound.play()
+                        selected = "Save Game"
+
+                    elif event.key == pygame.K_UP and selected == "Return to Main Menu":
+                        key_sound.play()
+                        selected = "Game Settings"
+
+                    elif event.key == pygame.K_UP and selected == "Exit Game":
+                        key_sound.play()
+                        selected = "Return to Main Menu"
+
+                    elif event.key == pygame.K_UP and selected == "Save Game":
+                        key_sound.play()
+                        selected = "Exit Game"
+
+                if event.key == pygame.K_RETURN:
+                    if selected == "Save Game":
+                        pass
+                    elif selected == "Game Settings":
+                        user_settings(screen, game_settings)
+                    elif selected == "Return to Main Menu":
+                        welcome_screen(screen, game_settings)
+                    elif selected == "Exit Game":
+                        sys.exit()
+
+        # creating Pause Game instruction
+        if selected == "Save Game":
+            save_game = text_format("Save Game", game_settings.font, 60, game_settings.color_white)
+        else:
+            save_game = text_format("Save Game", game_settings.font, 60, game_settings.color_black)
+
+        if selected == "Game Settings":
+            settings = text_format("Game Settings", game_settings.font, 60, game_settings.color_white)
+        else:
+            settings = text_format("Game Settings", game_settings.font, 60, game_settings.color_black)
+
+        if selected == "Return to Main Menu":
+            main_menu = text_format("Return to Main Menu", game_settings.font, 60, game_settings.color_white)
+        else:
+            main_menu = text_format("Return to Main Menu", game_settings.font, 60, game_settings.color_black)
+
+        if selected == "Exit Game":
+            exit_game = text_format("Exit Game", game_settings.font, 60, game_settings.color_white)
+        else:
+            exit_game = text_format("Exit Game", game_settings.font, 60, game_settings.color_black)
+
+        save_game_rect = save_game.get_rect()
+        settings_rect = settings.get_rect()
+        main_menu_rect = main_menu.get_rect()
+        exit_game_rect = exit_game.get_rect()
+
+        screen.blit(save_game, (game_settings.screen_width / 2 - (save_game_rect[2] / 2), 300))
+        screen.blit(settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 340))
+        screen.blit(main_menu, (game_settings.screen_width / 2 - (main_menu_rect[2] / 2), 380))
+        screen.blit(exit_game, (game_settings.screen_width / 2 - (exit_game_rect[2] / 2), 420))
+
+        # draw the updated screen
+        pygame.display.flip()
+
+        clock.tick(game_settings.FPS)
