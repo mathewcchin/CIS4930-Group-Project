@@ -13,4 +13,3 @@ pygame.display.set_caption(game_settings.caption)
 
 # run welcome screen
 gf.welcome_screen(screen, game_settings)
-#gf.run_game(screen, game_settings)

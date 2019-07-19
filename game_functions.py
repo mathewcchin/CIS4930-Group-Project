@@ -38,13 +38,13 @@ def run_game(screen, game_settings):
 
         # generate zombies
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
-        
+
         # delete zombies and bullets when zombie is shot by bullet
         shoot_zombie(zombies, bullets_pistol)
-        
+
         # update player stats (rotation and position)
         player.update()
-        
+
         # update zombie
         zombies.update()
 
@@ -72,6 +72,7 @@ def check_keydown_events(event, player):
     if event.key == pygame.K_d:
         player.moving_right = True
 
+
 def check_keyup_events(event, player):
     if event.key == pygame.K_w:
         player.moving_up = False
@@ -92,7 +93,8 @@ def is_mouse_in_player(player):
     """
     mouse_position = pygame.mouse.get_pos()
 
-    if mouse_position[0] >= player.updated_rect.left and mouse_position[0] <= player.updated_rect.right and mouse_position[1] >= player.updated_rect.top and mouse_position[1] <= player.updated_rect.bottom:
+    if mouse_position[0] >= player.updated_rect.left and mouse_position[0] <= player.updated_rect.right and \
+            mouse_position[1] >= player.updated_rect.top and mouse_position[1] <= player.updated_rect.bottom:
         return True
 
     return False
@@ -106,7 +108,8 @@ def check_mousedown(event, player, bullets, game_settings, screen):
     """
 
     # left click
-    if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(player):
+    if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(
+            player):
         # play the shooting sound at channel 1
         pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
         pisto_channel = pygame.mixer.Channel(1)
@@ -145,7 +148,7 @@ def check_events(player, bullets, game_settings, screen):
             check_mousedown(event, player, bullets, game_settings, screen)
 
 
-def spawn_zombies(zombies, player, game_settings, screen,  last_spawn_time):
+def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     # if time interval is less than spawn time, do nothing
     if pygame.time.get_ticks() - last_spawn_time < game_settings.spawn_time:
         return last_spawn_time
@@ -371,9 +374,8 @@ def user_settings(screen, game_settings):
         # draw the updated screen
         pygame.display.flip()
 
-# creating player instruction
-def pause_game(screen, game_settings):
 
+def pause_game(screen, game_settings):
     pause = text_format("Pause Game", game_settings.font, 100, game_settings.color_black)
     pause_rect = pause.get_rect()
     screen.blit(pause, (game_settings.screen_width / 2 - (pause_rect[2] / 2), 150))
@@ -392,7 +394,7 @@ def pause_game(screen, game_settings):
                 if event.key == pygame.K_ESCAPE:
                     return
 
-                elif event.key == pygame.K_DOWN and selected == "Save Game":
+                if event.key == pygame.K_DOWN and selected == "Save Game":
                     key_sound.play()
                     selected = "Game Settings"
 
@@ -426,7 +428,8 @@ def pause_game(screen, game_settings):
 
                 if event.key == pygame.K_RETURN:
                     if selected == "Save Game":
-                        print("Save Game")
+                        #print("Save Game")
+                        saved_game(screen, game_settings)
                     elif selected == "Game Settings":
                         user_settings(screen, game_settings)
                     elif selected == "Return to Main Menu":
@@ -470,3 +473,24 @@ def pause_game(screen, game_settings):
         pygame.display.flip()
 
         clock.tick(game_settings.FPS)
+
+def saved_game(screen, game_settings):
+    background = pygame.image.load("img/bg.jpg")
+
+    while True:
+        screen.blit(background, (0, 0))
+
+        # creating player instruction
+        instructions = text_format("Please Enter Gamer Name:", game_settings.font, 75, game_settings.color_black)
+        instructions_rect = instructions.get_rect()
+        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 300))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+
+        pygame.display.flip()
