@@ -262,7 +262,7 @@ def welcome_screen(screen, game_settings):
                     if selected == "new game":
                         run_game(screen, game_settings)
                     if selected == "load game":
-                        print("loading game")
+                        load_user(screen, game_settings)
                     if selected == "settings":
                         user_settings(screen, game_settings)
                     if selected == "quit":
@@ -428,8 +428,7 @@ def pause_game(screen, game_settings):
 
                 if event.key == pygame.K_RETURN:
                     if selected == "Save Game":
-                        #print("Save Game")
-                        saved_game(screen, game_settings)
+                        saved_user(screen, game_settings)
                     elif selected == "Game Settings":
                         user_settings(screen, game_settings)
                     elif selected == "Return to Main Menu":
@@ -474,7 +473,8 @@ def pause_game(screen, game_settings):
 
         clock.tick(game_settings.FPS)
 
-def saved_game(screen, game_settings):
+
+def saved_user(screen, game_settings):
     background = pygame.image.load("img/bg.jpg")
 
     while True:
@@ -483,7 +483,29 @@ def saved_game(screen, game_settings):
         # creating player instruction
         instructions = text_format("Please Enter Gamer Name:", game_settings.font, 75, game_settings.color_black)
         instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 300))
+        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 150))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+
+        pygame.display.flip()
+
+
+def load_user(screen, game_settings):
+    background = pygame.image.load("img/bg.jpg")
+
+    while True:
+        screen.blit(background, (0, 0))
+
+        # creating player instruction
+        instructions = text_format("Please select Gamer Name below:", game_settings.font, 60, game_settings.color_black)
+        instructions_rect = instructions.get_rect()
+        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 150))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
