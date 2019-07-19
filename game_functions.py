@@ -199,7 +199,7 @@ def welcome_screen(screen, game_settings):
     # https://www.dl-sounds.com/royalty-free/power-bots-loop/
 
     pygame.mixer.music.load("sfx/power_bots_loop.wav")
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.5)
 
     # key click noise:
@@ -269,7 +269,7 @@ def welcome_screen(screen, game_settings):
         menu = pygame.image.load('img/bg.jpg')
         screen.blit(menu, (0, 0))
 
-        title = text_format(game_settings.caption, font, 90, game_settings.color_black)
+        title = text_format(game_settings.caption, font, 100, game_settings.color_black)
         if selected == "new game":
             text_new_game = text_format("NEW GAME", font, 75, game_settings.color_white)
         else:
@@ -297,7 +297,7 @@ def welcome_screen(screen, game_settings):
         quit_rect = text_quit.get_rect()
 
         # Main Menu Text
-        screen.blit(title, (game_settings.screen_width / 2 - (title_rect[2] / 2), 80))
+        screen.blit(title, (game_settings.screen_width / 2 - (title_rect[2] / 2), 150))
         screen.blit(text_new_game, (game_settings.screen_width / 2 - (new_game_rect[2] / 2), 300))
         screen.blit(text_load_game, (game_settings.screen_width / 2 - (load_game_rect[2] / 2), 350))
         screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 400))
@@ -321,7 +321,7 @@ def user_settings(screen, game_settings):
 
         # creating player instruction
         instructions = text_format("Instructions", game_settings.font, 75, game_settings.color_black)
-        movement_instructions = text_format("Movement:", game_settings.font, 60, game_settings.color_black)
+        movement_instructions = text_format("Movement . . .", game_settings.font, 60, game_settings.color_black)
         move_up = text_format("move up . . . . . . . . . . w key", game_settings.font, 50, game_settings.color_black)
         move_down = text_format("move down . . . . . . . . s key", game_settings.font, 50, game_settings.color_black)
         move_left = text_format("move left . . . . . . . . . a key", game_settings.font, 50, game_settings.color_black)
@@ -354,7 +354,7 @@ def user_settings(screen, game_settings):
         screen.blit(move_left, (game_settings.screen_width / 2 - (move_left_rect[2] / 2), 300))
         screen.blit(move_right, (game_settings.screen_width / 2 - (move_right_rect[2] / 2), 340))
 
-        screen.blit(shooting_instructions, (game_settings.screen_width / 2 - (shooting_instructions_rect[2] / 2), 400))
+        screen.blit(shooting_instructions, (game_settings.screen_width / 3 - (shooting_instructions_rect[2] / 3), 400))
         screen.blit(shoot, (game_settings.screen_width / 2 - (shoot_rect[2] / 2), 460))
         screen.blit(aim, (game_settings.screen_width / 2 - (aim_rect[2] / 2), 500))
 
@@ -371,12 +371,12 @@ def user_settings(screen, game_settings):
         # draw the updated screen
         pygame.display.flip()
 
-
+# creating player instruction
 def pause_game(screen, game_settings):
-    # creating player instruction
+
     pause = text_format("Pause Game", game_settings.font, 100, game_settings.color_black)
     pause_rect = pause.get_rect()
-    screen.blit(pause, (game_settings.screen_width / 2 - (pause_rect[2] / 2), 200))
+    screen.blit(pause, (game_settings.screen_width / 2 - (pause_rect[2] / 2), 150))
 
     key_sound = pygame.mixer.Sound('sfx/key_sound.wav')
     clock = pygame.time.Clock()
@@ -391,6 +391,7 @@ def pause_game(screen, game_settings):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return
+
                 elif event.key == pygame.K_DOWN and selected == "Save Game":
                     key_sound.play()
                     selected = "Game Settings"
@@ -407,26 +408,25 @@ def pause_game(screen, game_settings):
                     key_sound.play()
                     selected = "Save Game"
 
-                if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_UP and selected == "Game Settings":
-                        key_sound.play()
-                        selected = "Save Game"
+                elif event.key == pygame.K_UP and selected == "Game Settings":
+                    key_sound.play()
+                    selected = "Save Game"
 
-                    elif event.key == pygame.K_UP and selected == "Return to Main Menu":
-                        key_sound.play()
-                        selected = "Game Settings"
+                elif event.key == pygame.K_UP and selected == "Return to Main Menu":
+                    key_sound.play()
+                    selected = "Game Settings"
 
-                    elif event.key == pygame.K_UP and selected == "Exit Game":
-                        key_sound.play()
-                        selected = "Return to Main Menu"
+                elif event.key == pygame.K_UP and selected == "Exit Game":
+                    key_sound.play()
+                    selected = "Return to Main Menu"
 
-                    elif event.key == pygame.K_UP and selected == "Save Game":
-                        key_sound.play()
-                        selected = "Exit Game"
+                elif event.key == pygame.K_UP and selected == "Save Game":
+                    key_sound.play()
+                    selected = "Exit Game"
 
                 if event.key == pygame.K_RETURN:
                     if selected == "Save Game":
-                        pass
+                        print("Save Game")
                     elif selected == "Game Settings":
                         user_settings(screen, game_settings)
                     elif selected == "Return to Main Menu":
@@ -460,6 +460,7 @@ def pause_game(screen, game_settings):
         main_menu_rect = main_menu.get_rect()
         exit_game_rect = exit_game.get_rect()
 
+        # drawing player pause-menu text to the screen
         screen.blit(save_game, (game_settings.screen_width / 2 - (save_game_rect[2] / 2), 300))
         screen.blit(settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 340))
         screen.blit(main_menu, (game_settings.screen_width / 2 - (main_menu_rect[2] / 2), 380))
