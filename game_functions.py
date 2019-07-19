@@ -202,7 +202,7 @@ def welcome_screen(screen, game_settings):
     # https://www.dl-sounds.com/royalty-free/power-bots-loop/
 
     pygame.mixer.music.load("sfx/power_bots_loop.wav")
-    pygame.mixer.music.play(-1)
+    #pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.5)
 
     # key click noise:
@@ -260,6 +260,7 @@ def welcome_screen(screen, game_settings):
 
                 if event.key == pygame.K_RETURN:
                     if selected == "new game":
+                        create_user(screen, game_settings)
                         run_game(screen, game_settings)
                     if selected == "load game":
                         load_user(screen, game_settings)
@@ -323,7 +324,7 @@ def user_settings(screen, game_settings):
         screen.blit(background, (0, 0))
 
         # creating player instruction
-        instructions = text_format("Instructions", game_settings.font, 75, game_settings.color_black)
+        instructions = text_format("Game Instructions", game_settings.font, 75, game_settings.color_black)
         movement_instructions = text_format("Movement . . .", game_settings.font, 60, game_settings.color_black)
         move_up = text_format("move up . . . . . . . . . . w key", game_settings.font, 50, game_settings.color_black)
         move_down = text_format("move down . . . . . . . . s key", game_settings.font, 50, game_settings.color_black)
@@ -376,15 +377,18 @@ def user_settings(screen, game_settings):
 
 
 def pause_game(screen, game_settings):
-    pause = text_format("Pause Game", game_settings.font, 100, game_settings.color_black)
-    pause_rect = pause.get_rect()
-    screen.blit(pause, (game_settings.screen_width / 2 - (pause_rect[2] / 2), 150))
+    # draws background
+    background = pygame.image.load("img/bg.jpg")
 
+    # in-game fx sound for whenever the user presses the up or down arrow key
     key_sound = pygame.mixer.Sound('sfx/key_sound.wav')
     clock = pygame.time.Clock()
 
+    # Pause Game selection menu
     selected = "Save Game"
     while True:
+        screen.blit(background, (0,0))
+
         # checking for player input to quit instruction screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -437,6 +441,8 @@ def pause_game(screen, game_settings):
                         sys.exit()
 
         # creating Pause Game instruction
+        pause = text_format("Pause Game", game_settings.font, 100, game_settings.color_black)
+
         if selected == "Save Game":
             save_game = text_format("Save Game", game_settings.font, 60, game_settings.color_white)
         else:
@@ -457,21 +463,47 @@ def pause_game(screen, game_settings):
         else:
             exit_game = text_format("Exit Game", game_settings.font, 60, game_settings.color_black)
 
+        pause_rect = pause.get_rect()
         save_game_rect = save_game.get_rect()
         settings_rect = settings.get_rect()
         main_menu_rect = main_menu.get_rect()
         exit_game_rect = exit_game.get_rect()
 
         # drawing player pause-menu text to the screen
+        screen.blit(pause, (game_settings.screen_width / 2 - (pause_rect[2] / 2), 150))
         screen.blit(save_game, (game_settings.screen_width / 2 - (save_game_rect[2] / 2), 300))
         screen.blit(settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 340))
         screen.blit(main_menu, (game_settings.screen_width / 2 - (main_menu_rect[2] / 2), 380))
         screen.blit(exit_game, (game_settings.screen_width / 2 - (exit_game_rect[2] / 2), 420))
 
         # draw the updated screen
-        pygame.display.flip()
+        pygame.display.update()
 
         clock.tick(game_settings.FPS)
+
+
+def create_user(screen, game_settings):
+    background = pygame.image.load("img/bg.jpg")
+
+    while True:
+        screen.blit(background, (0, 0))
+
+        # creating player instruction
+        instructions = text_format("Please Enter Gamer Name:", game_settings.font, 60, game_settings.color_black)
+        instructions_rect = instructions.get_rect()
+        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 125))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    welcome_screen(screen, game_settings)
+                if event.key == pygame.K_RETURN:
+                    return
+
+        pygame.display.update()
 
 
 def saved_user(screen, game_settings):
@@ -481,9 +513,9 @@ def saved_user(screen, game_settings):
         screen.blit(background, (0, 0))
 
         # creating player instruction
-        instructions = text_format("Please Enter Gamer Name:", game_settings.font, 75, game_settings.color_black)
+        instructions = text_format("Please Select Gamer Name to Save:", game_settings.font, 60, game_settings.color_black)
         instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 150))
+        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -493,7 +525,10 @@ def saved_user(screen, game_settings):
                 if event.key == pygame.K_ESCAPE:
                     return
 
-        pygame.display.flip()
+                if event.key == pygame.K_RETURN:
+                    pass
+
+        pygame.display.update()
 
 
 def load_user(screen, game_settings):
@@ -503,9 +538,9 @@ def load_user(screen, game_settings):
         screen.blit(background, (0, 0))
 
         # creating player instruction
-        instructions = text_format("Please select Gamer Name below:", game_settings.font, 60, game_settings.color_black)
+        instructions = text_format("Please Select Gamer Name to Load:", game_settings.font, 60, game_settings.color_black)
         instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 150))
+        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -515,4 +550,7 @@ def load_user(screen, game_settings):
                 if event.key == pygame.K_ESCAPE:
                     return
 
-        pygame.display.flip()
+                if event.key == pygame.K_RETURN:
+                    pass
+
+        pygame.display.update()
