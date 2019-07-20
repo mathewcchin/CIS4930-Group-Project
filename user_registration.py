@@ -235,23 +235,31 @@ def textBoxInput(textbox, functionToCall=None, args=[]):
 
     textbox.text = ""
     returnVal = None
+    game_settings = Settings()
 
     while True:
         updateDisplay()
-        #if functionToCall:
-         #   returnVal = functionToCall(*args)
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    if returnVal:
-                        return textbox.text #,  returnVal
+                    if textbox.text == "":
+                        error_case = makeLabel("Please Enter a Name", 40, 420, 350, game_settings.color_white
+                                               , game_settings.font)
+                        showLabel(error_case)
+                        continue
+
                     else:
                         return textbox.text
                 elif event.key == pygame.K_BACKSPACE:
                     textbox.clear()
 
+                elif event.key == pygame.K_ESCAPE:
+                    return
+
                 else:
                     textbox.update(event)
+
             elif event.type == pygame.QUIT:
                 sys.exit()
 
