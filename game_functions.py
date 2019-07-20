@@ -8,6 +8,7 @@ from setting import Settings
 from player import PlayerPistol
 from zombie import Zombie
 from userinfo import User
+from user_registration import *
 
 
 def run_game(screen, game_settings):
@@ -485,31 +486,28 @@ def pause_game(screen, game_settings):
 
 
 def create_user(screen, game_settings):
-    background = pygame.image.load("img/bg.jpg")
 
-    while True:
-        screen.blit(background, (0, 0))
 
-        # creating player instruction
-        instructions = text_format("Please Enter Gamer Name:", game_settings.font, 60, game_settings.color_black)
-        instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 2 - (instructions_rect[2] / 2), 125))
+    screenSize(game_settings.screen_width, game_settings.screen_height)
+    setBackgroundImage('img/bg.jpg')
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
+    titleLabel = makeLabel("New Player Registration", 80, 100, 100, game_settings.color_black,
+                           game_settings.font, "clear")
+    showLabel(titleLabel)
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    welcome_screen(screen, game_settings)
+    instructionLabel = makeLabel("Player Name: ", 40, 100, 250, game_settings.color_black,
+                                 game_settings.font, "clear")
+    showLabel(instructionLabel)  # makes label appear on the screen
+    # parameters are in the order x,y,case,prompt,maxlen of characters that can be typed, font size
+    # if max len set to 0 any amount of characters can be typed
+    wordBox = makeTextBox(420, 250, 300, 0, "Enter text here", 30, 24)
+    showTextBox(wordBox)  # makes the text box appear on the screen
+    entry = textBoxInput(wordBox)  # user input will be stored in entry
 
-                if event.key == pygame.K_RETURN:
-                    name = "Mathew"
-                    new_user = User(name)
-                    new_user.save()
-                    return
-
-        pygame.display.update()
+    print(type(entry))
+    new_user = User(entry)
+    new_user.save()
+    pygame.display.update()
 
 
 def saved_user(screen, game_settings):
@@ -517,8 +515,8 @@ def saved_user(screen, game_settings):
 
     saved = 0
     while True:
-        screen.blit(background, (0, 0))
 
+        screen.blit(background, (0, 0))
         # creating player instruction
         instructions = text_format("Please Select Gamer Name to Save:", game_settings.font, 60,
                                    game_settings.color_black)
