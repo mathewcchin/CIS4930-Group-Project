@@ -1,15 +1,11 @@
 import pygame, sys, os
 from setting import Settings
 
-pygame.mixer.pre_init(44100, -16, 2, 512)
-pygame.init()
-pygame.mixer.init()
+
 spriteGroup = pygame.sprite.OrderedUpdates()
 textboxGroup = pygame.sprite.OrderedUpdates()
 screenRefresh = True
 background = None
-
-
 
 class Background():
     def __init__(self):
