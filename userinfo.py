@@ -1,5 +1,5 @@
 import pickle
-from os import path
+import os
 
 
 class User:
@@ -9,9 +9,14 @@ class User:
         self.filename = self.name + ".dat"
 
     def save(self):
-        pickle.dump(self,open(self.filename, "wb"))
+        # finds the 'users' directory and looks to open the associated file name
+        current_dir = os.getcwd() + "/users"
+        file_to_open = os.path.join(current_dir, self.name + ".dat")
+        user_file = open(file_to_open, "wb")
+        pickle.dump(self, user_file)
+        user_file.close()
 
     def load(self, tag):
-        tag=tag+".dat"
+        tag = tag + ".dat"
         return pickle.load(open(tag, "rb"))
 

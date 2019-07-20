@@ -7,6 +7,7 @@ from bullet_pistol import BulletPistol
 from setting import Settings
 from player import PlayerPistol
 from zombie import Zombie
+from userinfo import User
 
 
 def run_game(screen, game_settings):
@@ -202,7 +203,7 @@ def welcome_screen(screen, game_settings):
     # https://www.dl-sounds.com/royalty-free/power-bots-loop/
 
     pygame.mixer.music.load("sfx/power_bots_loop.wav")
-    #pygame.mixer.music.play(-1)
+    # pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.5)
 
     # key click noise:
@@ -263,7 +264,8 @@ def welcome_screen(screen, game_settings):
                         create_user(screen, game_settings)
                         run_game(screen, game_settings)
                     if selected == "load game":
-                        load_user(screen, game_settings)
+                        list = ["mathew", "bob", "kennan", "jessica"]
+                        load_user(screen, game_settings, list)
                     if selected == "settings":
                         user_settings(screen, game_settings)
                     if selected == "quit":
@@ -387,7 +389,7 @@ def pause_game(screen, game_settings):
     # Pause Game selection menu
     selected = "Save Game"
     while True:
-        screen.blit(background, (0,0))
+        screen.blit(background, (0, 0))
 
         # checking for player input to quit instruction screen
         for event in pygame.event.get():
@@ -500,7 +502,11 @@ def create_user(screen, game_settings):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     welcome_screen(screen, game_settings)
+
                 if event.key == pygame.K_RETURN:
+                    name = "Mathew"
+                    new_user = User(name)
+                    new_user.save()
                     return
 
         pygame.display.update()
@@ -509,11 +515,13 @@ def create_user(screen, game_settings):
 def saved_user(screen, game_settings):
     background = pygame.image.load("img/bg.jpg")
 
+    saved = 0
     while True:
         screen.blit(background, (0, 0))
 
         # creating player instruction
-        instructions = text_format("Please Select Gamer Name to Save:", game_settings.font, 60, game_settings.color_black)
+        instructions = text_format("Please Select Gamer Name to Save:", game_settings.font, 60,
+                                   game_settings.color_black)
         instructions_rect = instructions.get_rect()
         screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
 
@@ -526,22 +534,38 @@ def saved_user(screen, game_settings):
                     return
 
                 if event.key == pygame.K_RETURN:
-                    pass
+                    saved = 1
+
+        if saved == 1:
+            save_confirmation = text_format("<User> progress was successfully saved.", game_settings.font,
+                                            40, game_settings.color_white)
+            save_confirmation_rect = save_confirmation.get_rect()
+            screen.blit(save_confirmation, (game_settings.screen_width / 3 - (save_confirmation_rect[2] / 3),
+                                            600))
 
         pygame.display.update()
 
 
-def load_user(screen, game_settings):
+def load_user(screen, game_settings, userList):  # user_info
     background = pygame.image.load("img/bg.jpg")
 
     while True:
         screen.blit(background, (0, 0))
 
         # creating player instruction
-        instructions = text_format("Please Select Gamer Name to Load:", game_settings.font, 60, game_settings.color_black)
+        instructions = text_format("Please Select Gamer Name to Load:", game_settings.font, 60,
+                                   game_settings.color_black)
         instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
+        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
 
+        '''
+        pixel_space = 240
+        for user in userList:
+            load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
+            load_gamer_rect = instructions.get_rect()
+            screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
+            pixel_space += 40
+        '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
