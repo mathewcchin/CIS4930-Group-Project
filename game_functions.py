@@ -6,7 +6,7 @@ from pygame.sprite import Group  # for grouping multiple objects based on pygame
 from bullet_pistol import BulletPistol
 from setting import Settings
 from player import PlayerPistol
-from zombie import Zombie
+from zombie import *
 from userinfo import User
 from user_registration import *
 
@@ -23,7 +23,7 @@ def run_game(screen, game_settings):
     """
 
     # create objects that will displayed on game main screen
-    background = pygame.image.load("img/bg.jpg")
+    background = pygame.image.load("img/bg.jpg").convert_alpha()
     player = PlayerPistol(screen, game_settings)
 
     # create Group() object to store bullets that was shot
@@ -33,8 +33,17 @@ def run_game(screen, game_settings):
     zombies = Group()
     last_spawn_time = pygame.time.get_ticks()  # record zombie spawn time
 
+    # create a Group() object to store dead zombies
+    dead_zombies = Group()
+
+    # controls game fps
+    clock = pygame.time.Clock()
+
     # start the main loop of the game
     while True:
+        # FPS
+        clock.tick(game_settings.FPS)
+
         # check event
         check_events(player, bullets_pistol, game_settings, screen)
 
@@ -42,7 +51,7 @@ def run_game(screen, game_settings):
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
 
         # delete zombies and bullets when zombie is shot by bullet
-        shoot_zombie(zombies, bullets_pistol)
+        shoot_zombie(zombies, bullets_pistol, dead_zombies)
 
         # update player stats (rotation and position)
         player.update()
@@ -50,11 +59,14 @@ def run_game(screen, game_settings):
         # update zombie
         zombies.update()
 
+        # update dead_zombie
+        dead_zombies.update()
+
         # update bullets
         bullets_pistol.update()
 
         # update screen
-        update_screen(background, player, zombies, screen, bullets_pistol)
+        update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies)
 
 
 def check_keydown_events(event, player):
@@ -113,8 +125,8 @@ def check_mousedown(event, player, bullets, game_settings, screen):
     if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(
             player):
         # play the shooting sound at channel 1
-        pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
-        pisto_channel = pygame.mixer.Channel(1)
+        pistol_sound = pygame.mixer.Sound('sfx/weapons/usp.wav')
+        pisto_channel = pygame.mixer.Channel(game_settings.pistol_channel)
         pisto_channel.play(pistol_sound)
 
         # create a pistol bullet and add to bullets
@@ -139,9 +151,9 @@ def check_events(player, bullets, game_settings, screen):
         if event.type == pygame.KEYDOWN:
             check_keydown_events(event, player)
 
-            # Implementation of a pause function:
-            if event.key == pygame.K_ESCAPE:
-                pause_game(screen, game_settings)
+        # Implementation of a pause function:
+        if event.type == pygame.K_ESCAPE:
+            pause_game(screen, game_settings)
 
         if event.type == pygame.KEYUP:
             check_keyup_events(event, player)
@@ -163,27 +175,30 @@ def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     return pygame.time.get_ticks()
 
 
-def shoot_zombie(zombies, bullets):
+def shoot_zombie(zombies, bullets, dead_zombies):
     for zombie in zombies.copy().sprites():
         for bullet in bullets.copy().sprites():
             if zombie.rect.colliderect(bullet.rect):
+                # play the hitting sound effect
+                hit_sound = pygame.mixer.Sound('sfx/zombie/hit3.wav')
+                hit_channel = pygame.mixer.Channel(zombie.game_settings.zombie_hit_channel)
+                hit_channel.play(hit_sound)
+
+                # remove bullets and zombies
                 bullets.remove(bullet)
                 zombies.remove(zombie)
 
+                # create a new dead zombie and add to dead_zombies
+                new_dead_zombie = DeadZombie(zombie.angle, zombie.updated_rect, zombie.game_settings, zombie.screen)
+                dead_zombies.add(new_dead_zombie)
 
-def update_screen(background, player, zombies, screen, bullets):
+
+def update_screen(background, player, zombies, screen, bullets, dead_zombies):
     """
     Redraw screens (after items on the screen are updated)
     """
     # draw background
     screen.blit(background, (0, 0))
-
-    # draw player's character to screen
-    screen.blit(player.rotated_image, player.updated_rect)
-
-    # draw each zombie to screen
-    for zombie in zombies:
-        zombie.blit_zombie()
 
     # blit each bullet, delete it if it is out of screen
     for bullet in bullets.copy().sprites():
@@ -191,6 +206,20 @@ def update_screen(background, player, zombies, screen, bullets):
             bullets.remove(bullet)
         else:
             bullet.blit_bullet()
+
+    # blit each dead zombie's death animation, delete it if all frames are displayed
+    for dead_zombie in dead_zombies.copy().sprites():
+        if not dead_zombie.death_images:  # remove zombie that finished displaying death frames
+            dead_zombies.remove(dead_zombie)
+        else:
+            dead_zombie.blit_death_frame()
+
+    # draw player's character to screen
+    screen.blit(player.rotated_image, player.updated_rect)
+
+    # draw each zombie to screen
+    for zombie in zombies:
+        zombie.blit_zombie()
 
     # draw the updated screen on the game window
     pygame.display.flip()

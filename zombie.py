@@ -23,7 +23,7 @@ class Zombie(Sprite):
         self.random_spawn_generator()
 
         # load zombie image and initial rect
-        self.image = pygame.image.load("img/zombie.jpg")
+        self.image = pygame.image.load(game_settings.zombie_image)
         self.rect = self.image.get_rect()
         self.rect.centerx = self.start_x
         self.rect.centery = self.start_y
@@ -73,7 +73,8 @@ class Zombie(Sprite):
         player_position = self.player.rect.centerx, self.player.rect.centery
 
         # calculate angle using the initial rect
-        self.angle = math.degrees(math.atan2(self.rect.centery - player_position[1], self.rect.centerx - player_position[0]))
+        self.angle = math.degrees(
+            math.atan2(self.rect.centery - player_position[1], self.rect.centerx - player_position[0]))
 
         # rotate zombie's image surface
         self.rotated_image = pygame.transform.rotate(self.image, 180 - self.angle)
@@ -92,3 +93,52 @@ class Zombie(Sprite):
         Blit the zombie to the screen
         """
         self.screen.blit(self.rotated_image, self.updated_rect)
+
+
+class DeadZombie(Sprite):
+    """
+    This class is used to draw the dead zombie animation
+    """
+
+    def __init__(self, angle, rect, game_settings, screen):
+        # initialiation of base class (Sprite)
+        super().__init__()
+
+        # get the rotated angle and position of current zombie
+        # get the display screen from current zombie
+        self.angle = angle
+        self.rect = rect
+        self.screen = screen
+        self.game_settings = game_settings
+
+        # load zombie death image series
+        # images are stored separately for rotation purpose (sprite sheet does not help)
+        self.death_images = []
+        seed = random.randint(1, 2)
+
+        if seed == 1:
+            zombie_death_sheet = game_settings.zombie_death_sheet_1
+        elif seed == 2:
+            zombie_death_sheet = game_settings.zombie_death_sheet_2
+
+        # load last frame of corpse
+        for i in range(game_settings.zombie_death_display_frame):
+            self.death_images.append(pygame.image.load(zombie_death_sheet[0]))
+        # load previous death frame
+        for i in range(len(zombie_death_sheet)):
+            for j in range(game_settings.zombie_death_frame_multiplier):
+                self.death_images.append(pygame.image.load(zombie_death_sheet[i]))
+
+    def blit_death_frame(self):
+        """
+        Blit one frame of death image from the self.death_images
+        Then delete one frame
+        (The dead_zombie object will be deleted from dead_zombies sprite group is death_images is empty: no need to display any more)
+        :return:
+        """
+        rotated_image = pygame.transform.rotate(self.death_images[-1], 180 - self.angle)
+        self.screen.blit(rotated_image, self.rect)
+
+    def update(self):
+        # remove the last frame
+        self.death_images.pop()
