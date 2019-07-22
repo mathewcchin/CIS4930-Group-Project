@@ -26,6 +26,7 @@ class PlayerPistol:
 
         # load character image and get its rect
         self.image = pygame.image.load('img/player_pistol.jpg')
+        # self.image = pygame.image.load('img/2.png')
         self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
@@ -56,7 +57,6 @@ class PlayerPistol:
         
         # record the time of last shooting
         self.last_shooting_time = 0
-        
 
     def update(self):
         """
@@ -106,9 +106,7 @@ class PlayerPistol:
         self.updated_rect = self.rotated_image.get_rect()
         self.updated_rect.centerx = self.rect.centerx
         self.updated_rect.centery = self.rect.centery
-        
 
-    
     def display_firing(self):
         # rotate the fire image according to current mouse position
         self.rotated_fire_image = pygame.transform.rotate(self.fire_image, 180 - self.angle)
