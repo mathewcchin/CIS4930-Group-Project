@@ -151,9 +151,10 @@ def check_events(player, bullets, game_settings, screen):
         if event.type == pygame.KEYDOWN:
             check_keydown_events(event, player)
 
-        # Implementation of a pause function:
-        if event.type == pygame.K_ESCAPE:
-            pause_game(screen, game_settings)
+            # Implementation of a pause function:
+            if event.key == pygame.K_ESCAPE:
+                print("is it pausing?")
+                pause_game(screen, game_settings)
 
         if event.type == pygame.KEYUP:
             check_keyup_events(event, player)
@@ -297,9 +298,10 @@ def welcome_screen(screen, game_settings):
                     if selected == "new game":
                         create_user(screen, game_settings)
                         run_game(screen, game_settings)
+
                     if selected == "load game":
-                        list = ["mathew", "bob", "kennan", "jessica"]
-                        load_user(screen, game_settings, list)
+                        #list = ["mathew", "bob", "kennan", "jessica"]
+                        load_user(screen, game_settings)
                     if selected == "settings":
                         user_settings(screen, game_settings)
                     if selected == "quit":
@@ -519,8 +521,6 @@ def pause_game(screen, game_settings):
 
 
 def create_user(screen, game_settings):
-
-
     screenSize(game_settings.screen_width, game_settings.screen_height)
     setBackgroundImage('img/bg.jpg')
 
@@ -537,9 +537,14 @@ def create_user(screen, game_settings):
     showTextBox(wordBox)  # makes the text box appear on the screen
     entry = textBoxInput(wordBox)  # user input will be stored in entry
 
-    print(type(entry))
-    new_user = User(entry)
-    new_user.save()
+    new_user = User()
+    if new_user.check_user(entry) == 1:
+        create_user(screen, game_settings)
+
+    else:
+        new_user.name = entry
+        new_user.save()
+
     pygame.display.update()
 
 
@@ -555,6 +560,16 @@ def saved_user(screen, game_settings):
                                    game_settings.color_black)
         instructions_rect = instructions.get_rect()
         screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
+
+        username = User()
+        userList = username.show_users()
+
+        pixel_space = 240
+        for user in userList:
+            load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
+            load_gamer_rect = instructions.get_rect()
+            screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
+            pixel_space += 60
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -577,7 +592,7 @@ def saved_user(screen, game_settings):
         pygame.display.update()
 
 
-def load_user(screen, game_settings, userList):  # user_info
+def load_user(screen, game_settings):  # user_info
     background = pygame.image.load("img/bg.jpg")
 
     while True:
@@ -589,14 +604,16 @@ def load_user(screen, game_settings, userList):  # user_info
         instructions_rect = instructions.get_rect()
         screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
 
-        '''
+        username = User()
+        userList = username.show_users()
+
         pixel_space = 240
         for user in userList:
             load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
             load_gamer_rect = instructions.get_rect()
             screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
-            pixel_space += 40
-        '''
+            pixel_space += 60
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -609,3 +626,4 @@ def load_user(screen, game_settings, userList):  # user_info
                     pass
 
         pygame.display.update()
+
