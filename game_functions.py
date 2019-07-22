@@ -51,7 +51,7 @@ def run_game(screen, game_settings):
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
 
         # delete zombies and bullets when zombie is shot by bullet
-        shoot_zombie(zombies, bullets_pistol, dead_zombies)
+        shoot_zombie(zombies, bullets_pistol, dead_zombies, player)
 
         # update player stats (rotation and position)
         player.update()
@@ -125,7 +125,7 @@ def check_mousedown(event, player, bullets, game_settings, screen):
     if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(
             player):
         # play the shooting sound at channel 1
-        pistol_sound = pygame.mixer.Sound('sfx/weapons/usp.wav')
+        pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
         pisto_channel = pygame.mixer.Channel(game_settings.pistol_channel)
         pisto_channel.play(pistol_sound)
 
@@ -175,12 +175,12 @@ def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     return pygame.time.get_ticks()
 
 
-def shoot_zombie(zombies, bullets, dead_zombies):
+def shoot_zombie(zombies, bullets, dead_zombies, player):
     for zombie in zombies.copy().sprites():
         for bullet in bullets.copy().sprites():
             if zombie.rect.colliderect(bullet.rect):
                 # play the hitting sound effect
-                hit_sound = pygame.mixer.Sound('sfx/zombie/hit3.wav')
+                hit_sound = pygame.mixer.Sound('sfx/zombie/explode.wav')
                 hit_channel = pygame.mixer.Channel(zombie.game_settings.zombie_hit_channel)
                 hit_channel.play(hit_sound)
 
@@ -191,6 +191,10 @@ def shoot_zombie(zombies, bullets, dead_zombies):
                 # create a new dead zombie and add to dead_zombies
                 new_dead_zombie = DeadZombie(zombie.angle, zombie.updated_rect, zombie.game_settings, zombie.screen)
                 dead_zombies.add(new_dead_zombie)
+                
+                # update player's kill score
+                player.zombie_killed += 1
+                print('total zombie killed:', player.zombie_killed)
 
 
 def update_screen(background, player, zombies, screen, bullets, dead_zombies):

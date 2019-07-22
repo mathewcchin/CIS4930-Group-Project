@@ -56,7 +56,9 @@ class PlayerPistol:
         
         # record the time of last shooting
         self.last_shooting_time = 0
-        
+
+        # record the number of enemies killed
+        self.zombie_killed = 0
 
     def update(self):
         """
@@ -106,8 +108,6 @@ class PlayerPistol:
         self.updated_rect = self.rotated_image.get_rect()
         self.updated_rect.centerx = self.rect.centerx
         self.updated_rect.centery = self.rect.centery
-        
-
     
     def display_firing(self):
         # rotate the fire image according to current mouse position
