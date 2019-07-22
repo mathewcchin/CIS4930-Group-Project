@@ -1,18 +1,18 @@
 import pickle
 import os
-
-
+from player import PlayerPistol
+from setting import Settings
 class User:
     def __init__(self):
         self.name = ""
-        self.score = 0
-        self.filename = self.name + ".dat"
         self.user_list = list()
+        #self.Player = PlayerPistol(screen, game_settings)
+        self.score = 0
 
     def save(self):
         # finds the 'users' directory and looks to open the associated file name
         current_dir = os.getcwd() + "/users"
-        file_to_open = os.path.join(current_dir, self.filename)
+        file_to_open = os.path.join(current_dir, (self.name + ".dat"))
         user_file = open(file_to_open, "wb")
         pickle.dump(self, user_file)
         user_file.close()
