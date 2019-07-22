@@ -39,20 +39,20 @@ class Settings:
 
         # zombie settings
         self.zombie_image = "img/zombie.jpg"
-        self.zombie_death_sheet_1 = ["img/zombie_death/death_1/6.jpg", "img/zombie_death/death_1/5.jpg",
-                                     "img/zombie_death/death_1/4.jpg", "img/zombie_death/death_1/3.jpg",
-                                     "img/zombie_death/death_1/2.jpg", "img/zombie_death/death_1/1.jpg"]
+        self.zombie_death_sheet_1 = ["img/zombie_death/death_1/6.png", "img/zombie_death/death_1/5.png",
+                                     "img/zombie_death/death_1/4.png", "img/zombie_death/death_1/3.png",
+                                     "img/zombie_death/death_1/2.png", "img/zombie_death/death_1/1.png"]
 
-        self.zombie_death_sheet_2 = ["img/zombie_death/death_2/6.jpg", "img/zombie_death/death_2/5.jpg",
-                                     "img/zombie_death/death_2/4.jpg", "img/zombie_death/death_2/3.jpg",
-                                     "img/zombie_death/death_2/2.jpg", "img/zombie_death/death_2/1.jpg"]
+        self.zombie_death_sheet_2 = ["img/zombie_death/death_2/6.png", "img/zombie_death/death_2/5.png",
+                                     "img/zombie_death/death_2/4.png", "img/zombie_death/death_2/3.png",
+                                     "img/zombie_death/death_2/2.png", "img/zombie_death/death_2/1.png"]
 
         self.zombie_death_frame_multiplier = 5
         self.zombie_death_display_frame = 200  # how many frames to keep corpse of zombie
 
         self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
-        self.spawn_time = 1000  # time to spawn a zombie, in milliseconds
+        self.spawn_time = 500  # time to spawn a zombie, in milliseconds
 
         # bullet_pistol settings
         self.bullet_pistol_speed = 80
