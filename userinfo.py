@@ -17,8 +17,8 @@ class User:
         user_file.close()
 
     def load(self, tag):
-        tag = tag + ".dat"
-        return pickle.load(open(tag, "rb"))
+        file = os.path.join((os.getcwd() + "/users"), tag + ".dat")
+        return pickle.load(open(file, "rb"))
 
     def show_score(self):
         return self.score
