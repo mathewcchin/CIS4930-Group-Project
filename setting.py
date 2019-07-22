@@ -38,6 +38,18 @@ class Settings:
         self.allowed_margin = 20  # minimum allowed distance of player to edge 
 
         # zombie settings
+        self.zombie_image = "img/zombie.jpg"
+        self.zombie_death_sheet_1 = ["img/zombie_death/death_1/6.jpg", "img/zombie_death/death_1/5.jpg",
+                                     "img/zombie_death/death_1/4.jpg", "img/zombie_death/death_1/3.jpg",
+                                     "img/zombie_death/death_1/2.jpg", "img/zombie_death/death_1/1.jpg"]
+
+        self.zombie_death_sheet_2 = ["img/zombie_death/death_2/6.jpg", "img/zombie_death/death_2/5.jpg",
+                                     "img/zombie_death/death_2/4.jpg", "img/zombie_death/death_2/3.jpg",
+                                     "img/zombie_death/death_2/2.jpg", "img/zombie_death/death_2/1.jpg"]
+
+        self.zombie_death_frame_multiplier = 5
+        self.zombie_death_display_frame = 200  # how many frames to keep corpse of zombie
+
         self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
         self.spawn_time = 1000  # time to spawn a zombie, in milliseconds
@@ -49,14 +61,14 @@ class Settings:
         # sound channels (playback channels)
         self.foot_step_channel = 0
         self.pistol_channel = 1
+        self.zombie_hit_channel = 3
 
-        # other game settings
-        self.total_time = 90
-
-        # welcome menu settings
+        # welcome menu and game settings
         self.font = "img/INVASION2000.TTF"
-        self.FPS = 30
+        self.FPS = 60
 
         # Colors
         self.color_white = (255, 255, 255)
         self.color_black = (0, 0, 0)
+
+
