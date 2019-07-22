@@ -254,8 +254,8 @@ def textBoxInput(textbox, functionToCall=None, args=[]):
                 elif event.key == pygame.K_BACKSPACE:
                     textbox.clear()
 
-                elif event.key == pygame.K_ESCAPE:
-                    return
+                #elif event.key == pygame.K_ESCAPE:
+                #    return
 
                 else:
                     textbox.update(event)
