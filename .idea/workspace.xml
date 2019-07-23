@@ -26,8 +26,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/2D_shooting_game.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="15" column="47" selection-start-line="15" selection-start-column="47" selection-end-line="15" selection-end-column="47" />
+            <state relative-caret-position="289">
+              <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -35,11 +35,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/userinfo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="528">
-              <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
+            <state relative-caret-position="171">
+              <caret line="35" lean-forward="true" selection-start-line="35" selection-end-line="35" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -84,29 +84,17 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/game_functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="395">
-              <caret line="546" column="29" lean-forward="true" selection-start-line="546" selection-start-column="29" selection-end-line="546" selection-end-column="29" />
+            <state relative-caret-position="-843">
+              <caret line="552" column="38" selection-start-line="552" selection-start-column="38" selection-end-line="552" selection-end-column="38" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
                 <element signature="e#2742#2800#1" />
                 <element signature="e#3178#3345#1" />
                 <element signature="e#3544#4079#0" />
                 <element signature="e#4144#4239#1" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/saveload.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="5" column="20" selection-start-line="5" selection-start-column="20" selection-end-line="5" selection-end-column="20" />
-              <folding>
-                <element signature="e#0#13#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -142,6 +130,7 @@
       <find>saved_</find>
       <find>pause_game</find>
       <find>create_user</find>
+      <find>welcome_screen</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -158,17 +147,17 @@
         <option value="$PROJECT_DIR$/player.py" />
         <option value="$PROJECT_DIR$/user_registration.py" />
         <option value="$PROJECT_DIR$/2D_shooting_game.py" />
-        <option value="$PROJECT_DIR$/game_functions.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/saveload.py" />
         <option value="$PROJECT_DIR$/userinfo.py" />
+        <option value="$PROJECT_DIR$/game_functions.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="14" />
-    <option name="y" value="23" />
-    <option name="width" value="1280" />
-    <option name="height" value="721" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="450" />
+    <option name="y" value="228" />
+    <option name="width" value="1960" />
+    <option name="height" value="1368" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -419,18 +408,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/2D_shooting_game.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="47" selection-start-line="15" selection-start-column="47" selection-end-line="15" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/userinfo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="528">
-          <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
+        <state relative-caret-position="289">
+          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
@@ -439,14 +418,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/game_functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="395">
-          <caret line="546" column="29" lean-forward="true" selection-start-line="546" selection-start-column="29" selection-end-line="546" selection-end-column="29" />
+        <state relative-caret-position="-843">
+          <caret line="552" column="38" selection-start-line="552" selection-start-column="38" selection-end-line="552" selection-end-column="38" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
             <element signature="e#2742#2800#1" />
             <element signature="e#3178#3345#1" />
             <element signature="e#3544#4079#0" />
             <element signature="e#4144#4239#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/userinfo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="35" lean-forward="true" selection-start-line="35" selection-end-line="35" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -6,7 +6,7 @@ class User:
     def __init__(self):
         self.name = ""
         self.user_list = list()
-        #self.Player = PlayerPistol(screen, game_settings)
+        self.highscore = 0
         self.score = 0
 
     def save(self):
@@ -26,6 +26,13 @@ class User:
 
     def add_score(self, num):
         self.score += num
+
+    def high_score(self):
+        if self.highscore >= self.score:
+            self.highscore = self.highscore
+        else:
+            self.highscore = self.score
+        return self.highscore
 
     def check_user(self, username) -> bool:  # this will be a bool function: 1 - username already used, 0 - not used
         username += ".dat"
