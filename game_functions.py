@@ -10,8 +10,10 @@ from zombie import *
 from userinfo import User
 from user_registration import *
 
+#player = PlayerPistol(screen, game_settings)
 
-def run_game(screen, game_settings):
+
+def run_game(screen, game_settings, player):
     """
     This function does following:
         -Initialize game objects
@@ -24,7 +26,7 @@ def run_game(screen, game_settings):
 
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg").convert_alpha()
-    player = PlayerPistol(screen, game_settings)
+    # player = PlayerPistol(screen, game_settings)
 
     # create Group() object to store bullets that was shot
     bullets_pistol = Group()
@@ -153,8 +155,7 @@ def check_events(player, bullets, game_settings, screen):
 
             # Implementation of a pause function:
             if event.key == pygame.K_ESCAPE:
-                print("is it pausing?")
-                pause_game(screen, game_settings)
+                pause_game(screen, game_settings,player)
 
         if event.type == pygame.KEYUP:
             check_keyup_events(event, player)
@@ -230,7 +231,7 @@ def update_screen(background, player, zombies, screen, bullets, dead_zombies):
     pygame.display.flip()
 
 
-def welcome_screen(screen, game_settings):
+def welcome_screen(screen, game_settings, player):
     # Game sounds:
     # Main Menu (Royalty Free Soundtrack):
     # Power Bots Loop
@@ -297,7 +298,8 @@ def welcome_screen(screen, game_settings):
                 if event.key == pygame.K_RETURN:
                     if selected == "new game":
                         create_user(screen, game_settings)
-                        run_game(screen, game_settings)
+                        player = PlayerPistol(screen, game_settings)
+                        run_game(screen, game_settings, player)
 
                     if selected == "load game":
                         #list = ["mathew", "bob", "kennan", "jessica"]
@@ -414,7 +416,7 @@ def user_settings(screen, game_settings):
         pygame.display.flip()
 
 
-def pause_game(screen, game_settings):
+def pause_game(screen, game_settings, player):
     # draws background
     background = pygame.image.load("img/bg.jpg")
 
@@ -470,11 +472,11 @@ def pause_game(screen, game_settings):
 
                 if event.key == pygame.K_RETURN:
                     if selected == "Save Game":
-                        saved_user(screen, game_settings)
+                        saved_user(screen, game_settings, player)
                     elif selected == "Game Settings":
                         user_settings(screen, game_settings)
                     elif selected == "Return to Main Menu":
-                        welcome_screen(screen, game_settings)
+                        welcome_screen(screen, game_settings, player)
                     elif selected == "Exit Game":
                         sys.exit()
 
@@ -548,7 +550,7 @@ def create_user(screen, game_settings):
     pygame.display.update()
 
 
-def saved_user(screen, game_settings):
+def saved_user(screen, game_settings, player):
     background = pygame.image.load("img/bg.jpg")
 
     saved = 0
@@ -563,7 +565,8 @@ def saved_user(screen, game_settings):
 
         username = User()
         userList = username.show_users()
-
+        username.add_score(player.zombie_killed)
+        print(username.show_score())
         pixel_space = 240
         for user in userList:
             load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)

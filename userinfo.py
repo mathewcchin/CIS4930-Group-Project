@@ -1,18 +1,18 @@
 import pickle
 import os
-
-
+from player import PlayerPistol
+from setting import Settings
 class User:
     def __init__(self):
         self.name = ""
-        self.score = 0
-        self.filename = self.name + ".dat"
         self.user_list = list()
+        self.highscore = 0
+        self.score = 0
 
     def save(self):
         # finds the 'users' directory and looks to open the associated file name
         current_dir = os.getcwd() + "/users"
-        file_to_open = os.path.join(current_dir, self.filename)
+        file_to_open = os.path.join(current_dir, (self.name + ".dat"))
         user_file = open(file_to_open, "wb")
         pickle.dump(self, user_file)
         user_file.close()
@@ -26,6 +26,13 @@ class User:
 
     def add_score(self, num):
         self.score += num
+
+    def high_score(self):
+        if self.highscore >= self.score:
+            self.highscore = self.highscore
+        else:
+            self.highscore = self.score
+        return self.highscore
 
     def check_user(self, username) -> bool:  # this will be a bool function: 1 - username already used, 0 - not used
         username += ".dat"
