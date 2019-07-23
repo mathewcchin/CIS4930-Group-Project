@@ -550,7 +550,7 @@ def create_user(screen, game_settings):
     pygame.display.update()
 
 
-def saved_user(screen, game_settings,player):
+def saved_user(screen, game_settings, player):
     background = pygame.image.load("img/bg.jpg")
 
     saved = 0
