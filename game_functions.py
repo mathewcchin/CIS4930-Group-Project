@@ -9,8 +9,10 @@ from player import PlayerPistol
 from zombie import *
 from userinfo import User
 from user_registration import *
+import pickle
+import os
 
-
+leadtable = dict()
 def run_game(screen, game_settings, player):
     """
     This function does following:
@@ -276,9 +278,13 @@ def welcome_screen(screen, game_settings, player):
                     key_sound.play()
                     selected = "new game"
 
-                elif selected == "settings" and event.key == pygame.K_UP:
+                elif selected == "leaderboard" and event.key == pygame.K_UP:
                     key_sound.play()
                     selected = "load game"
+
+                elif selected == "settings" and event.key == pygame.K_UP:
+                    key_sound.play()
+                    selected = "leaderboard"
 
                 elif selected == "quit" and event.key == pygame.K_UP:
                     key_sound.play()
@@ -289,6 +295,10 @@ def welcome_screen(screen, game_settings, player):
                     selected = "load game"
 
                 elif selected == "load game" and event.key == pygame.K_DOWN:
+                    key_sound.play()
+                    selected = "leaderboard"
+
+                elif selected == "leaderboard" and event.key == pygame.K_DOWN:
                     key_sound.play()
                     selected = "settings"
 
@@ -305,10 +315,11 @@ def welcome_screen(screen, game_settings, player):
                         create_user(screen, game_settings)
                         player = PlayerPistol(screen, game_settings)
                         run_game(screen, game_settings, player)
-
                     if selected == "load game":
                         #list = ["mathew", "bob", "kennan", "jessica"]
                         load_user(screen, game_settings)
+                    if selected == "leaderboard":
+                        leaderboard(screen, game_settings)
                     if selected == "settings":
                         user_settings(screen, game_settings)
                     if selected == "quit":
@@ -328,7 +339,10 @@ def welcome_screen(screen, game_settings, player):
             text_load_game = text_format("LOAD GAME", font, 75, game_settings.color_white)
         else:
             text_load_game = text_format("LOAD GAME", font, 75, game_settings.color_black)
-
+        if selected == "leaderboard":
+            text_leaderboard = text_format("LEADERBOARD", font, 75, game_settings.color_white)
+        else:
+            text_leaderboard = text_format("LEADERBOARD", font, 75, game_settings.color_black)
         if selected == "settings":
             text_settings = text_format("SETTINGS", font, 75, game_settings.color_white)
         else:
@@ -342,6 +356,7 @@ def welcome_screen(screen, game_settings, player):
         title_rect = title.get_rect()
         new_game_rect = text_new_game.get_rect()
         load_game_rect = text_load_game.get_rect()
+        leaderboard_rect = text_leaderboard.get_rect()
         settings_rect = text_settings.get_rect()
         quit_rect = text_quit.get_rect()
 
@@ -349,8 +364,9 @@ def welcome_screen(screen, game_settings, player):
         screen.blit(title, (game_settings.screen_width / 2 - (title_rect[2] / 2), 150))
         screen.blit(text_new_game, (game_settings.screen_width / 2 - (new_game_rect[2] / 2), 300))
         screen.blit(text_load_game, (game_settings.screen_width / 2 - (load_game_rect[2] / 2), 350))
-        screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 400))
-        screen.blit(text_quit, (game_settings.screen_width / 2 - (quit_rect[2] / 2), 450))
+        screen.blit(text_leaderboard, (game_settings.screen_width / 2 - (leaderboard_rect[2] / 2), 400))
+        screen.blit(text_settings, (game_settings.screen_width / 2 - (settings_rect[2] / 2), 450))
+        screen.blit(text_quit, (game_settings.screen_width / 2 - (quit_rect[2] / 2), 500))
         pygame.display.update()
         clock.tick(FPS)
 
@@ -571,13 +587,15 @@ def saved_user(screen, game_settings, player):
         username = User()
         userList = username.show_users()
         username.add_score(player.zombie_killed)
-        print(username.show_score())
+        #print(username.show_score())
+        #print(username.show_highscore())
         pixel_space = 240
         for user in userList:
             load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
             load_gamer_rect = instructions.get_rect()
             screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
             pixel_space += 60
+            leadtable.update({user: username.show_highscore()})
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -634,4 +652,40 @@ def load_user(screen, game_settings):  # user_info
                     pass
 
         pygame.display.update()
+
+
+def leaderboard(screen, game_settings):  # user_info
+        background = pygame.image.load("img/bg.jpg")
+
+        while True:
+            screen.blit(background, (0, 0))
+
+            # creating player instruction
+            instructions = text_format("Leaderboard:", game_settings.font, 60,
+                                       game_settings.color_black)
+            instructions_rect = instructions.get_rect()
+            screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
+
+            pixel_space = 240
+            for key, value in sorted(leadtable.items()):
+                statement = key +" . . . . . . . . . . "+str(value)
+                load_gamer = text_format(statement, game_settings.font, 45, game_settings.color_black)
+                load_gamer_rect = instructions.get_rect()
+                screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
+                pixel_space += 60
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        return
+
+                    if event.key == pygame.K_RETURN:
+                        pass
+
+            pygame.display.update()
+
+
 

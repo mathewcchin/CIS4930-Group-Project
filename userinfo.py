@@ -11,6 +11,7 @@ class User:
 
     def save(self):
         # finds the 'users' directory and looks to open the associated file name
+        self.high_score()
         current_dir = os.getcwd() + "/users"
         file_to_open = os.path.join(current_dir, (self.name + ".dat"))
         user_file = open(file_to_open, "wb")
@@ -22,7 +23,11 @@ class User:
         return pickle.load(open(file, "rb"))
 
     def show_score(self):
+        self.high_score()
         return self.score
+
+    def show_highscore(self):
+        return self.highscore
 
     def add_score(self, num):
         self.score += num
@@ -32,7 +37,6 @@ class User:
             self.highscore = self.highscore
         else:
             self.highscore = self.score
-        return self.highscore
 
     def check_user(self, username) -> bool:  # this will be a bool function: 1 - username already used, 0 - not used
         username += ".dat"
