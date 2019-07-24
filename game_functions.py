@@ -5,7 +5,7 @@ import random
 from pygame.sprite import Group  # for grouping multiple objects based on pygame.sprite
 from bullet_pistol import BulletPistol
 from setting import Settings
-from player import PlayerPistol
+from player import Player
 from zombie import *
 from ammo import *
 from first_aid_pack import *
@@ -140,7 +140,6 @@ def check_mousedown(event, player, bullets, game_settings, screen):
             bullets.add(new_bullet)
             player.shots += 1  # add to total number of shots
             player.accuracy = player.zombie_killed / player.shots  # update accuracy
-            print('Clip:', player.clip_pistol)
 
             # fire
             player.display_firing()
@@ -193,31 +192,34 @@ def shoot_zombie(zombies, bullets, dead_zombies, player, pistol_ammos, first_aid
         for bullet in bullets.copy().sprites():
             if zombie.rect.colliderect(bullet.rect):
                 # play the hitting sound effect
-                hit_sound = pygame.mixer.Sound('sfx/zombie/explode.wav')
-                hit_channel = pygame.mixer.Channel(zombie.game_settings.zombie_attack_channel)
-                hit_channel.play(hit_sound)
+                zombie.hit_channel.play(zombie.zombie_hit_sound)
 
-                # remove bullets and zombies
+                # decrease zombie's hp and remove bullets
+                zombie.hp -= bullet.damage
                 bullets.remove(bullet)
-                zombies.remove(zombie)
 
-                # create a new dead zombie and add to dead_zombies
-                new_dead_zombie = DeadZombie(zombie)
-                dead_zombies.add(new_dead_zombie)
-                
-                # update player's kill score
-                player.zombie_killed += 1
-                print('total zombie killed:', player.zombie_killed)
+                # check if this zombie died or not
+                if zombie.hp <= 0:
+                    # play death sound and remove zombie from zombies
+                    zombie.hit_channel.play(zombie.zombie_death_sound)
+                    zombies.remove(zombie)
 
-                # drop ammo
-                if random.randint(1, 100) <= zombie.game_settings.pistol_ammo_drop_rate:
-                    new_ammo = PistolAmmo(zombie)
-                    pistol_ammos.add(new_ammo)
+                    # create a new dead zombie and add to dead_zombies
+                    new_dead_zombie = DeadZombie(zombie)
+                    dead_zombies.add(new_dead_zombie)
 
-                # drop first aid pack
-                if random.randint(1, 100) <= zombie.game_settings.first_aid_pack_drop_rate:
-                    new_first_aid_pack = FirstAidPack(zombie)
-                    first_aid_packs.add(new_first_aid_pack)
+                    # update player's kill score
+                    player.zombie_killed += 1
+
+                    # drop ammo
+                    if random.randint(1, 100) <= zombie.game_settings.pistol_ammo_drop_rate:
+                        new_ammo = PistolAmmo(zombie)
+                        pistol_ammos.add(new_ammo)
+
+                    # drop first aid pack
+                    if random.randint(1, 100) <= zombie.game_settings.first_aid_pack_drop_rate:
+                        new_first_aid_pack = FirstAidPack(zombie)
+                        first_aid_packs.add(new_first_aid_pack)
 
 
 def attack_player(zombies, player):
@@ -278,7 +280,7 @@ def player_get_item(player, pistol_ammos, first_aid_packs):
     for pistol_ammo in pistol_ammos.copy().sprites():
         if player.rect.colliderect(pistol_ammo.rect):
             player.ammo_pistol += pistol_ammo.amount
-            player.pisto_channel.play(player.ammo_pickup_sound)  # play sound
+            player.foot_steps_channel.play(player.ammo_pickup_sound)  # play sound
             pistol_ammos.remove(pistol_ammo)
 
     # get first aid packs
@@ -361,7 +363,7 @@ def welcome_screen(screen, game_settings, player):
                 if event.key == pygame.K_RETURN:
                     if selected == "new game":
                         create_user(screen, game_settings)
-                        player = PlayerPistol(screen, game_settings)
+                        player = Player(screen, game_settings)
                         run_game(screen, game_settings, player)
 
                     if selected == "load game":

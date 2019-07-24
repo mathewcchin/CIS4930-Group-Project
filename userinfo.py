@@ -1,6 +1,6 @@
 import pickle
 import os
-from player import PlayerPistol
+from player import Player
 from setting import Settings
 class User:
     def __init__(self):
