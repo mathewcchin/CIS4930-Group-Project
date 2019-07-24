@@ -189,7 +189,7 @@ def shoot_zombie(zombies, bullets, dead_zombies, player):
                 zombies.remove(zombie)
 
                 # create a new dead zombie and add to dead_zombies
-                new_dead_zombie = DeadZombie(zombie.angle, zombie.updated_rect, zombie.game_settings, zombie.screen)
+                new_dead_zombie = DeadZombie(zombie)
                 dead_zombies.add(new_dead_zombie)
                 
                 # update player's kill score

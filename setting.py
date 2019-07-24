@@ -38,7 +38,7 @@ class Settings:
         self.allowed_margin = 20  # minimum allowed distance of player to edge 
 
         # zombie settings
-        self.zombie_image = "img/zombie.jpg"
+        self.zombie_image = "img/zombie.png"
         self.zombie_death_sheet_1 = ["img/zombie_death/death_1/6.png", "img/zombie_death/death_1/5.png",
                                      "img/zombie_death/death_1/4.png", "img/zombie_death/death_1/3.png",
                                      "img/zombie_death/death_1/2.png", "img/zombie_death/death_1/1.png"]
@@ -47,12 +47,22 @@ class Settings:
                                      "img/zombie_death/death_2/4.png", "img/zombie_death/death_2/3.png",
                                      "img/zombie_death/death_2/2.png", "img/zombie_death/death_2/1.png"]
 
+        self.zombie_death_sheet_3 = ["img/zombie_death/death_3/15.png", "img/zombie_death/death_3/14.png", "img/zombie_death/death_3/13.png",
+                                     "img/zombie_death/death_3/12.png", "img/zombie_death/death_3/11.png", "img/zombie_death/death_3/10.png",
+                                     "img/zombie_death/death_3/9.png", "img/zombie_death/death_3/8.png", "img/zombie_death/death_3/7.png",
+                                     "img/zombie_death/death_3/6.png", "img/zombie_death/death_3/5.png", "img/zombie_death/death_3/4.png",
+                                     "img/zombie_death/death_3/3.png", "img/zombie_death/death_3/2.png", "img/zombie_death/death_3/1.png"]
+
+        # self.zombie_death_sheet_3 = ["img/zombie_death/death_3/15.png", "img/zombie_death/death_3/14.png", "img/zombie_death/death_3/13.png",
+        #                              "img/zombie_death/death_3/12.png", "img/zombie_death/death_3/11.png", "img/zombie_death/death_3/10.png",
+        #                              "img/zombie_death/death_3/9.png"]
+
         self.zombie_death_frame_multiplier = 5
-        self.zombie_death_display_frame = 200  # how many frames to keep corpse of zombie
+        self.zombie_corpse_display_frame = 1000  # how many frames to keep corpse of zombie
 
         self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
-        self.spawn_time = 2000  # time to spawn a zombie, in milliseconds
+        self.spawn_time = 1500  # time to spawn a zombie, in milliseconds
 
         self.zombie_damage = 20  # max damage to player's hp (each attack)
         self.zombie_attack_interval = 1000  # attack time interval, in ms
