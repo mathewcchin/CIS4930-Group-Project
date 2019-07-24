@@ -1,6 +1,5 @@
 import pygame
 from pygame.sprite import Sprite
-import math
 import random
 import math
 from setting import Settings
@@ -14,19 +13,10 @@ class Zombie(Sprite):
     # load zombie death resources as class variable to improve performance
     # images are stored separately for rotation purpose (sprite sheet does not help)
     death_images = []
-    # seed = random.randint(1, 3)
     game_settings = Settings()
-    seed = 3
-    if seed == 1:
-        zombie_death_sheet = game_settings.zombie_death_sheet_1
-    elif seed == 2:
-        zombie_death_sheet = game_settings.zombie_death_sheet_2
-    elif seed == 3:
-        zombie_death_sheet = game_settings.zombie_death_sheet_3
+    zombie_death_sheet = game_settings.zombie_death_sheet_3
 
-    death_images = []
-
-    # load last frame of corpse
+    # load last frame of corpse (this frame is displayed longer)
     for i in range(game_settings.zombie_corpse_display_frame):
         death_images.append(pygame.image.load(zombie_death_sheet[0]))
     # load previous death frame
@@ -96,15 +86,14 @@ class Zombie(Sprite):
     def update(self):
         """
         This method will do following:
-            1. update the rotation angle of zombie, so it faces player
-            2. update the coordinate of zombie's rect
+            1. update zombie coordinate and orientation
         :return:
         """
-        # check if zombie and player rect collide, if so don't move
-        if self.rect.colliderect(self.player.rect):
-            # return
-            pass
 
+        # update zombie's position
+        self.update_zombie_pos()
+
+    def update_zombie_pos(self):
         # calculate rotate angle and get rect
         # get player's position, used as "mouse position" as in player's class
         player_position = self.player.rect.centerx, self.player.rect.centery
