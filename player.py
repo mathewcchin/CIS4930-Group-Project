@@ -1,6 +1,7 @@
 import pygame
 import random  # for playing foot steps randomly
-import math  # for calculating rotated angle 
+import math  # for calculating rotated angle
+import game_functions as gf
 
 
 class PlayerPistol:
@@ -29,11 +30,6 @@ class PlayerPistol:
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
-        # load fire resources
-        self.pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
-        self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
-        self.pisto_channel = pygame.mixer.Channel(self.game_settings.pistol_channel)
-
         # get player rotation 
         mouse_position = pygame.mouse.get_pos()      
         self.angle = math.atan2(self.rect.centery - mouse_position[1], self.rect.centerx - mouse_position[0]) * 57.29
@@ -61,12 +57,26 @@ class PlayerPistol:
         # record the time of last shooting
         self.last_shooting_time = 0
 
-        # record the number of enemies killed
+        # record the number of enemies killed, number of shots
         self.zombie_killed = 0
+        self.shots = 0
+        self.accuracy = 0
 
         # player health point
         self.heart_image = pygame.image.load('img/heart.png')
         self.hp = self.game_settings.max_health_point
+
+        # load ammo and fire resources and set attributes
+        self.ammo_pistol = self.game_settings.initial_pistol_ammo
+        self.clip_pistol = self.game_settings.pistol_clip_capacity
+        self.pistol_sound = pygame.mixer.Sound(self.game_settings.pistol_sound_path)
+        self.clip_empty_sound = pygame.mixer.Sound(self.game_settings.clip_empty_sound_path)
+        self.clip_change_sound = pygame.mixer.Sound(self.game_settings.clip_change_sound_path)
+        self.pisto_channel = pygame.mixer.Channel(self.game_settings.pistol_channel)
+
+        self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
+
+        self.pistol_reload_frame = 0
 
     def update(self):
         """
@@ -116,7 +126,21 @@ class PlayerPistol:
         self.updated_rect = self.rotated_image.get_rect()
         self.updated_rect.centerx = self.rect.centerx
         self.updated_rect.centery = self.rect.centery
-    
+
+        # count reload time if self.pistol_reload_frame is not zero
+        # this means the player is reloading
+        # update player's clip number when self.pistol_reload_frame is returned to zero
+        if self.pistol_reload_frame > 0:
+            self.pistol_reload_frame -= 1
+            if self.pistol_reload_frame == 0:
+                self.ammo_pistol += self.clip_pistol  # get remainning ammo
+                if self.ammo_pistol > self.game_settings.pistol_clip_capacity:
+                    self.clip_pistol = self.game_settings.pistol_clip_capacity
+                    self.ammo_pistol -= self.game_settings.pistol_clip_capacity
+                else:
+                    self.clip_pistol = self.ammo_pistol
+                    self.ammo_pistol = 0
+
     def display_firing(self):
         # play the shooting sound at designated channel
         self.pisto_channel.play(self.pistol_sound)
@@ -132,6 +156,9 @@ class PlayerPistol:
         # update shooting time
         self.last_shooting_time = pygame.time.get_ticks()
 
+        # update clip
+        self.clip_pistol -= 1
+
     def injured(self):
         """
         This function is called when player is being attacked by zombie
@@ -139,6 +166,15 @@ class PlayerPistol:
         -
         :return:
         """
+        pass
+
+    def reload(self):
+        """
+        Reload clip
+        :return:
+        """
+        self.pistol_reload_frame = self.game_settings.pistol_reload_speed
+        self.pisto_channel.play(self.clip_change_sound)
 
     def blit_player(self):
         # draw player, called in update_screen() function
@@ -146,5 +182,15 @@ class PlayerPistol:
 
         # draw health bar
         self.screen.blit(self.heart_image, (1000, 730))  # draw heart
-        pygame.draw.rect(self.screen, (0, 0, 0), (1030, 730, self.game_settings.max_health_point, 20), 1)  # draw hp box
-        pygame.draw.rect(self.screen, (255, 0, 0), (1030, 730, self.hp, 20))
+        pygame.draw.rect(self.screen, (0, 0, 0), (1030, 730, self.game_settings.max_health_bar_length, 20), 1)  # draw hp box
+        pygame.draw.rect(self.screen, (255, 0, 0), (1031, 731, int(self.game_settings.max_health_bar_length * self.hp / self.game_settings.max_health_point), 18))
+
+        # display ammo amount
+        ammo_text_surface = gf.text_format(str(self.clip_pistol) + '/' + str(self.ammo_pistol), self.game_settings.digital_font_path, 40, (255, 230, 140))
+
+        self.screen.blit(ammo_text_surface, (850, 720))
+
+        # draw reload progress bar if player is reloading
+        if self.pistol_reload_frame > 0:
+            pygame.draw.rect(self.screen, (0, 0, 0), (self.rect[0], self.rect[1] - 30, self.game_settings.max_reload_bar_length, 20), 1)
+            pygame.draw.rect(self.screen, (255, 230, 140), (self.rect[0] - 1, self.rect[1] - 29, int(self.game_settings.max_reload_bar_length * (1 - self.pistol_reload_frame / self.game_settings.pistol_reload_speed)), 18))
