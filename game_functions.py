@@ -10,8 +10,6 @@ from zombie import *
 from userinfo import User
 from user_registration import *
 
-#player = PlayerPistol(screen, game_settings)
-
 
 def run_game(screen, game_settings, player):
     """
@@ -55,6 +53,9 @@ def run_game(screen, game_settings, player):
         # delete zombies and bullets when zombie is shot by bullet
         shoot_zombie(zombies, bullets_pistol, dead_zombies, player)
 
+        # zombie attack player
+        attack_player(zombies, player)
+
         # update player stats (rotation and position)
         player.update()
 
@@ -69,6 +70,10 @@ def run_game(screen, game_settings, player):
 
         # update screen
         update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies)
+
+        # if player is dead, break the main game loop
+        if player.hp <= 0:
+            break
 
 
 def check_keydown_events(event, player):
@@ -126,10 +131,6 @@ def check_mousedown(event, player, bullets, game_settings, screen):
     # left click
     if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(
             player):
-        # play the shooting sound at channel 1
-        pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
-        pisto_channel = pygame.mixer.Channel(game_settings.pistol_channel)
-        pisto_channel.play(pistol_sound)
 
         # create a pistol bullet and add to bullets
         new_bullet = BulletPistol(game_settings, screen, player)
@@ -137,9 +138,6 @@ def check_mousedown(event, player, bullets, game_settings, screen):
 
         # show fire frame
         player.display_firing()
-
-        # update player's last shooting time
-        player.last_shooting_time = pygame.time.get_ticks()
 
 
 def check_events(player, bullets, game_settings, screen):
@@ -199,6 +197,13 @@ def shoot_zombie(zombies, bullets, dead_zombies, player):
                 print('total zombie killed:', player.zombie_killed)
 
 
+def attack_player(zombies, player):
+    for zombie in zombies.sprites():
+        if zombie.rect.colliderect(player.rect) and pygame.time.get_ticks() - zombie.last_attacking_time >= player.game_settings.zombie_attack_interval:
+            # attack player
+            zombie.attack_player(player)
+
+
 def update_screen(background, player, zombies, screen, bullets, dead_zombies):
     """
     Redraw screens (after items on the screen are updated)
@@ -221,7 +226,7 @@ def update_screen(background, player, zombies, screen, bullets, dead_zombies):
             dead_zombie.blit_death_frame()
 
     # draw player's character to screen
-    screen.blit(player.rotated_image, player.updated_rect)
+    player.blit_player()
 
     # draw each zombie to screen
     for zombie in zombies:
