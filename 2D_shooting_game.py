@@ -13,5 +13,5 @@ pygame.display.set_caption(game_settings.caption)
 player = PlayerPistol(screen, game_settings)
 
 # run welcome screen
-# gf.welcome_screen(screen, game_settings, player)
-gf.run_game(screen, game_settings, player)
+gf.welcome_screen(screen, game_settings, player)
+# gf.run_game(screen, game_settings, player)
