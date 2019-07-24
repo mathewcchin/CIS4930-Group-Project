@@ -1,26 +1,12 @@
-import pickle
+
 import os
-from player import PlayerPistol
-from setting import Settings
+
 class User:
     def __init__(self):
         self.name = ""
         self.user_list = list()
         self.highscore = 0
         self.score = 0
-
-    def save(self):
-        # finds the 'users' directory and looks to open the associated file name
-        self.high_score()
-        current_dir = os.getcwd() + "/users"
-        file_to_open = os.path.join(current_dir, (self.name + ".dat"))
-        user_file = open(file_to_open, "wb")
-        pickle.dump(self, user_file)
-        user_file.close()
-
-    def load(self, tag):
-        file = os.path.join((os.getcwd() + "/users"), tag + ".dat")
-        return pickle.load(open(file, "rb"))
 
     def show_score(self):
         self.high_score()

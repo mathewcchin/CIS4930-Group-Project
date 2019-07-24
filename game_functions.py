@@ -11,6 +11,7 @@ from userinfo import User
 from user_registration import *
 import pickle
 import os
+import tkinter as tkr
 
 leadtable = dict()
 def run_game(screen, game_settings, player):
@@ -331,7 +332,7 @@ def welcome_screen(screen, game_settings, player):
                         player = PlayerPistol(screen, game_settings)
                         run_game(screen, game_settings, player)
                     if selected == "load game":
-                        #list = ["mathew", "bob", "kennan", "jessica"]
+                        # list = ["mathew", "bob", "kennan", "jessica"]
                         load_user(screen, game_settings)
                     if selected == "leaderboard":
                         leaderboard(screen, game_settings)
@@ -610,8 +611,7 @@ def saved_user(screen, game_settings, player):
             load_gamer_rect = instructions.get_rect()
             screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
             pixel_space += 60
-            leadtable.update({user: username.show_highscore()})
-
+            #addtoleadtable(user, username.show_highscore())
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -629,8 +629,8 @@ def saved_user(screen, game_settings, player):
             save_confirmation_rect = save_confirmation.get_rect()
             screen.blit(save_confirmation, (game_settings.screen_width / 3 - (save_confirmation_rect[2] / 3),
                                             600))
-
         pygame.display.update()
+
 
 
 def load_user(screen, game_settings):  # user_info
@@ -670,37 +670,66 @@ def load_user(screen, game_settings):  # user_info
 
 
 def leaderboard(screen, game_settings):  # user_info
-        background = pygame.image.load("img/bg.jpg")
-
-        while True:
-            screen.blit(background, (0, 0))
-
+    background = pygame.image.load("img/bg.jpg")
+    leadtable = openleadtable()
+    while True:
+        screen.blit(background, (0, 0))
             # creating player instruction
-            instructions = text_format("Leaderboard:", game_settings.font, 60,
+        instructions = text_format("Leaderboard:", game_settings.font, 60,
                                        game_settings.color_black)
-            instructions_rect = instructions.get_rect()
-            screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
+        instructions_rect = instructions.get_rect()
+        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
+        pixel_space = 240
+        for key, value in sorted(leadtable.items()):
+            statement = key + " . . . . . . . . . . " + str(value)
+            load_gamer = text_format(statement, game_settings.font, 45, game_settings.color_black)
+            load_gamer_rect = instructions.get_rect()
+            screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
+            pixel_space += 60
 
-            pixel_space = 240
-            for key, value in sorted(leadtable.items()):
-                statement = key +" . . . . . . . . . . "+str(value)
-                load_gamer = text_format(statement, game_settings.font, 45, game_settings.color_black)
-                load_gamer_rect = instructions.get_rect()
-                screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
-                pixel_space += 60
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        return
-
-                    if event.key == pygame.K_RETURN:
-                        pass
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+                if event.key == pygame.K_RETURN:
+                    pass
 
             pygame.display.update()
 
 
+def savegame(filetag, user):
+    current_dir = os.getcwd() + "/users"
+    file_to_open = os.path.join(current_dir, (filetag + ".dat"))
+    user_file = open(file_to_open, "wb")
+    pickle.dump(user, user_file)
+    user_file.close()
+
+
+def loadgame(filetag, user):
+    file = os.path.join((os.getcwd() + "/users"), filetag + ".dat")
+    pickle_in = open(file, "rb")
+    user = pickle.load(pickle_in)
+    return user
+
+
+def saveleadtable(leadtable):
+    file = open("leaderboard.dat", "wb")
+    pickle.dump(leadtable, file)
+    file.close()
+
+
+def openleadtable():
+    pickle_in = open("leaderboard.dat", "rb")
+    table = pickle.load(pickle_in)
+    return table
+
+
+def addtoleadtable(name, score):
+    x = dict({name: score})
+    y = openleadtable()
+    y.update(x)
+    saveleadtable(y)
+    print("leadtable saved\n")
 
