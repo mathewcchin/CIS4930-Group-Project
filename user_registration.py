@@ -50,7 +50,7 @@ class newTextBox(pygame.sprite.Sprite):
         self.initialColor = (180, 180, 180)
         self.font = pygame.font.Font(self.fontFace, fontSize)
         self.rect.topleft = [xpos, ypos]
-        newSurface = self.font.render(self.initialText, True, self.initialColor)
+        newSurface = self.font.render(" ", True, self.initialColor)
         self.image.blit(newSurface, [10, 5])
 
     def update(self, keyevent):
@@ -99,7 +99,7 @@ class newTextBox(pygame.sprite.Sprite):
     def clear(self):
         self.image.fill((255, 255, 255))
         pygame.draw.rect(self.image, (0, 0, 0), [0, 0, self.width - 1, self.boxSize - 1], 2)
-        newSurface = self.font.render(self.initialText, True, self.initialColor)
+        newSurface = self.font.render(" ", True, self.initialColor)
         self.image.blit(newSurface, [10, 5])
         if screenRefresh:
             updateDisplay()
@@ -253,9 +253,10 @@ def textBoxInput(textbox, functionToCall=None, args=[]):
                         return textbox.text
                 elif event.key == pygame.K_BACKSPACE:
                     textbox.clear()
+                    textbox.text = " "
 
-                elif event.key == pygame.K_ESCAPE:
-                    return
+                #elif event.key == pygame.K_ESCAPE:
+                #    return
 
                 else:
                     textbox.update(event)
@@ -282,9 +283,6 @@ def updateDisplay():
     textboxRects = textboxGroup.draw(screen)
     pygame.display.update()
     keys = pygame.key.get_pressed()
-    if (keys[pygame.K_ESCAPE]):
-        pygame.quit()
-        sys.exit()
     spriteGroup.clear(screen, background.surface)
     textboxGroup.clear(screen, background.surface)
 
