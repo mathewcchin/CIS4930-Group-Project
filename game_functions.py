@@ -7,6 +7,8 @@ from bullet_pistol import BulletPistol
 from setting import Settings
 from player import PlayerPistol
 from zombie import *
+from ammo import *
+from first_aid_pack import *
 from userinfo import User
 from user_registration import *
 
@@ -24,17 +26,14 @@ def run_game(screen, game_settings, player):
 
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg").convert_alpha()
-    # player = PlayerPistol(screen, game_settings)
 
-    # create Group() object to store bullets that was shot
+    # create Group() objects to store game objects shown on screen
     bullets_pistol = Group()
-
-    # create another Group() object to store zombies
     zombies = Group()
     last_spawn_time = pygame.time.get_ticks()  # record zombie spawn time
-
-    # create a Group() object to store dead zombies
     dead_zombies = Group()
+    pistol_ammos = Group()
+    first_aid_packs = Group()
 
     # controls game fps
     clock = pygame.time.Clock()
@@ -51,25 +50,24 @@ def run_game(screen, game_settings, player):
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
 
         # delete zombies and bullets when zombie is shot by bullet
-        shoot_zombie(zombies, bullets_pistol, dead_zombies, player)
+        shoot_zombie(zombies, bullets_pistol, dead_zombies, player, pistol_ammos, first_aid_packs)
 
         # zombie attack player
         attack_player(zombies, player)
 
-        # update player stats (rotation and position)
-        player.update()
+        # player get item
+        player_get_item(player, pistol_ammos, first_aid_packs)
 
-        # update zombie
-        zombies.update()
-
-        # update dead_zombie
-        dead_zombies.update()
-
-        # update bullets
-        bullets_pistol.update()
+        # update game objects
+        player.update()  # player's rotation and position
+        zombies.update()  # zombie's rotation and position
+        dead_zombies.update()  # decrease remaining frames of corpse display
+        bullets_pistol.update()  # bullets' rotation and position
+        pistol_ammos.update()  # decrease remaining frames of ammos
+        first_aid_packs.update()  # decrease remaining frames of first-aid-pack
 
         # update screen
-        update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies)
+        update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies, pistol_ammos, first_aid_packs)
 
         # if player is dead, break the main game loop
         if player.hp <= 0:
@@ -190,7 +188,7 @@ def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     return pygame.time.get_ticks()
 
 
-def shoot_zombie(zombies, bullets, dead_zombies, player):
+def shoot_zombie(zombies, bullets, dead_zombies, player, pistol_ammos, first_aid_packs):
     for zombie in zombies.copy().sprites():
         for bullet in bullets.copy().sprites():
             if zombie.rect.colliderect(bullet.rect):
@@ -211,6 +209,16 @@ def shoot_zombie(zombies, bullets, dead_zombies, player):
                 player.zombie_killed += 1
                 print('total zombie killed:', player.zombie_killed)
 
+                # drop ammo
+                if random.randint(1, 100) <= zombie.game_settings.pistol_ammo_drop_rate:
+                    new_ammo = PistolAmmo(zombie)
+                    pistol_ammos.add(new_ammo)
+
+                # drop first aid pack
+                if random.randint(1, 100) <= zombie.game_settings.first_aid_pack_drop_rate:
+                    new_first_aid_pack = FirstAidPack(zombie)
+                    first_aid_packs.add(new_first_aid_pack)
+
 
 def attack_player(zombies, player):
     for zombie in zombies.sprites():
@@ -219,7 +227,7 @@ def attack_player(zombies, player):
             zombie.attack_player(player)
 
 
-def update_screen(background, player, zombies, screen, bullets, dead_zombies):
+def update_screen(background, player, zombies, screen, bullets, dead_zombies, pistol_ammos, first_aid_packs):
     """
     Redraw screens (after items on the screen are updated)
     """
@@ -247,8 +255,43 @@ def update_screen(background, player, zombies, screen, bullets, dead_zombies):
     for zombie in zombies:
         zombie.blit_zombie()
 
+    # draw each pistol ammos to screen, remove those expired
+    for pistol_ammo in pistol_ammos.copy().sprites():
+        if pistol_ammo.ammo_life <= 0:
+            pistol_ammos.remove(pistol_ammo)
+        else:
+            pistol_ammo.blit_pistol_ammo()
+
+    # draw each first aid pack to screen, remove those expired
+    for first_aid_pack in first_aid_packs.copy().sprites():
+        if first_aid_pack.pack_life <= 0:
+            first_aid_packs.remove(first_aid_pack)
+        else:
+            first_aid_pack.blit_pack()
+
     # draw the updated screen on the game window
     pygame.display.flip()
+
+
+def player_get_item(player, pistol_ammos, first_aid_packs):
+    # get pistol ammos
+    for pistol_ammo in pistol_ammos.copy().sprites():
+        if player.rect.colliderect(pistol_ammo.rect):
+            player.ammo_pistol += pistol_ammo.amount
+            player.pisto_channel.play(player.ammo_pickup_sound)  # play sound
+            pistol_ammos.remove(pistol_ammo)
+
+    # get first aid packs
+    for first_aid_pack in first_aid_packs.copy().sprites():
+        if player.rect.colliderect(first_aid_pack.rect):
+            # heal player
+            player.hp += first_aid_pack.heal_amount
+            if player.hp > player.game_settings.max_health_point:
+                player.hp = player.game_settings.max_health_point
+            # play sound effect
+            player.foot_steps_channel.play(player.item_pickup_sound)
+            # delete pack
+            first_aid_packs.remove(first_aid_pack)
 
 
 def welcome_screen(screen, game_settings, player):
