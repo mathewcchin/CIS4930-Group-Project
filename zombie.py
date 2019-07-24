@@ -3,6 +3,7 @@ from pygame.sprite import Sprite
 import math
 import random
 import math
+from setting import Settings
 
 
 class Zombie(Sprite):
@@ -10,6 +11,28 @@ class Zombie(Sprite):
     Zombie class
 
     """
+    # load zombie death resources as class variable to improve performance
+    # images are stored separately for rotation purpose (sprite sheet does not help)
+    death_images = []
+    # seed = random.randint(1, 3)
+    game_settings = Settings()
+    seed = 3
+    if seed == 1:
+        zombie_death_sheet = game_settings.zombie_death_sheet_1
+    elif seed == 2:
+        zombie_death_sheet = game_settings.zombie_death_sheet_2
+    elif seed == 3:
+        zombie_death_sheet = game_settings.zombie_death_sheet_3
+
+    death_images = []
+
+    # load last frame of corpse
+    for i in range(game_settings.zombie_corpse_display_frame):
+        death_images.append(pygame.image.load(zombie_death_sheet[0]))
+    # load previous death frame
+    for i in range(len(zombie_death_sheet)):
+        for j in range(game_settings.zombie_death_frame_multiplier):
+            death_images.append(pygame.image.load(zombie_death_sheet[i]))
 
     def __init__(self, game_settings, screen, player):
         super().__init__()
@@ -31,9 +54,12 @@ class Zombie(Sprite):
         # load zombie attack resources
         self.attack_image = pygame.image.load('img/zombie_attack.png')
         self.attack_angle = 0
+        self.attack_sound = pygame.mixer.Sound('sfx/zombie/attack.wav')
+        # create a channel for playing attack sounds
+        self.attack_channel = pygame.mixer.Channel(game_settings.zombie_attack_channel)
 
         # create another pair of image and rect for rotated version, and update them
-        self.rotated_image = pygame.image.load("img/zombie.jpg")
+        self.rotated_image = pygame.image.load("img/zombie.png")
         self.updated_rect = self.rotated_image.get_rect()
         self.angle = None
         self.update()
@@ -127,6 +153,9 @@ class Zombie(Sprite):
         # update last attack time
         self.last_attacking_time = pygame.time.get_ticks()
 
+        # play attack sound
+        self.attack_channel.play(self.attack_sound)
+
     def blit_zombie(self):
         """
         Blit the zombie to the screen
@@ -139,34 +168,18 @@ class DeadZombie(Sprite):
     This class is used to draw the dead zombie animation
     """
 
-    def __init__(self, angle, rect, game_settings, screen):
+    def __init__(self, zombie):
         # initialiation of base class (Sprite)
         super().__init__()
 
         # get the rotated angle and position of current zombie
         # get the display screen from current zombie
-        self.angle = angle
-        self.rect = rect
-        self.screen = screen
-        self.game_settings = game_settings
-
-        # load zombie death image series
-        # images are stored separately for rotation purpose (sprite sheet does not help)
-        self.death_images = []
-        seed = random.randint(1, 2)
-
-        if seed == 1:
-            zombie_death_sheet = game_settings.zombie_death_sheet_1
-        elif seed == 2:
-            zombie_death_sheet = game_settings.zombie_death_sheet_2
-
-        # load last frame of corpse
-        for i in range(game_settings.zombie_death_display_frame):
-            self.death_images.append(pygame.image.load(zombie_death_sheet[0]))
-        # load previous death frame
-        for i in range(len(zombie_death_sheet)):
-            for j in range(game_settings.zombie_death_frame_multiplier):
-                self.death_images.append(pygame.image.load(zombie_death_sheet[i]))
+        self.angle = zombie.angle
+        self.rect = zombie.rect
+        self.screen = zombie.screen
+        self.game_settings = zombie.game_settings
+        self.zombie_death_sheet = zombie.zombie_death_sheet
+        self.death_images = zombie.death_images[:]
 
     def blit_death_frame(self):
         """
@@ -176,7 +189,9 @@ class DeadZombie(Sprite):
         :return:
         """
         rotated_image = pygame.transform.rotate(self.death_images[-1], 180 - self.angle)
+        # self.screen.blit(rotated_image, (self.rect[0] - 22, self.rect[1] - 19, self.rect[2] * 2, self.rect[3] * 2))
         self.screen.blit(rotated_image, self.rect)
+        # print('zombie rect (x, y):', self.rect)
 
     def update(self):
         # remove the last frame

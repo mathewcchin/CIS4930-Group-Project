@@ -26,19 +26,35 @@ class Settings:
     def __init__(self):
         """initialize game setting attributes"""
 
+        # fonts
+        self.digital_font_path = "fonts/DS-DIGIT.TTF"
+        self.font = "img/INVASION2000.TTF"
+
         # screen settings
         self.caption = "Zombie Apocalypse"
         self.screen_width = 1366
         self.screen_height = 768
 
-        # main character settings (carrying pistol)
+        # player settings
         self.character_speed = 3
         self.character_acceleration_ratio = 5
-        self.max_health_point = 200
+        self.max_health_point = 2000
+        self.max_health_bar_length = 200
         self.allowed_margin = 20  # minimum allowed distance of player to edge 
 
+        # weapon and ammo settingsd
+        self.pistol = 0
+        self.initial_pistol_ammo = 10
+        self.pistol_clip_capacity = 5
+        self.pistol_reload_speed = 70  # number of frames to reload
+
+        self.pistol_sound_path = 'sfx/weapons/p228.wav'
+        self.clip_empty_sound_path = 'sfx/weapons/w_empty.wav'
+        self.clip_change_sound_path = 'sfx/weapons/clip_change.wav'
+        self.max_reload_bar_length = 60
+
         # zombie settings
-        self.zombie_image = "img/zombie.jpg"
+        self.zombie_image = "img/zombie.png"
         self.zombie_death_sheet_1 = ["img/zombie_death/death_1/6.png", "img/zombie_death/death_1/5.png",
                                      "img/zombie_death/death_1/4.png", "img/zombie_death/death_1/3.png",
                                      "img/zombie_death/death_1/2.png", "img/zombie_death/death_1/1.png"]
@@ -47,12 +63,17 @@ class Settings:
                                      "img/zombie_death/death_2/4.png", "img/zombie_death/death_2/3.png",
                                      "img/zombie_death/death_2/2.png", "img/zombie_death/death_2/1.png"]
 
-        self.zombie_death_frame_multiplier = 5
-        self.zombie_death_display_frame = 200  # how many frames to keep corpse of zombie
+        self.zombie_death_sheet_3 = ["img/zombie_death/death_3/10.png",
+                                     "img/zombie_death/death_3/9.png", "img/zombie_death/death_3/8.png", "img/zombie_death/death_3/7.png",
+                                     "img/zombie_death/death_3/6.png", "img/zombie_death/death_3/5.png", "img/zombie_death/death_3/4.png",
+                                     "img/zombie_death/death_3/3.png", "img/zombie_death/death_3/2.png", "img/zombie_death/death_3/1.png"]
+
+        self.zombie_death_frame_multiplier = 2
+        self.zombie_corpse_display_frame = 200  # how many frames to keep corpse of zombie
 
         self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
-        self.spawn_time = 2000  # time to spawn a zombie, in milliseconds
+        self.spawn_time = 1500  # time to spawn a zombie, in milliseconds
 
         self.zombie_damage = 20  # max damage to player's hp (each attack)
         self.zombie_attack_interval = 1000  # attack time interval, in ms
@@ -64,10 +85,9 @@ class Settings:
         # sound channels (playback channels)
         self.foot_step_channel = 0
         self.pistol_channel = 1
-        self.zombie_hit_channel = 3
+        self.zombie_attack_channel = 3
 
         # welcome menu and game settings
-        self.font = "img/INVASION2000.TTF"
         self.FPS = 60
 
         # Colors

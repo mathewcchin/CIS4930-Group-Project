@@ -95,6 +95,11 @@ def check_keydown_events(event, player):
     if event.key == pygame.K_d:
         player.moving_right = True
 
+    if event.key == pygame.K_r:
+        # reload
+        if player.clip_pistol < player.game_settings.pistol_clip_capacity and player.ammo_pistol > 0:
+            player.reload()
+
 
 def check_keyup_events(event, player):
     if event.key == pygame.K_w:
@@ -132,14 +137,24 @@ def check_mousedown(event, player, bullets, game_settings, screen):
 
     # left click
     if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(
-            player):
+            player) and player.pistol_reload_frame == 0:
+        if player.clip_pistol > 0:
+            # create a pistol bullet and add to bullets
+            new_bullet = BulletPistol(game_settings, screen, player)
+            bullets.add(new_bullet)
+            player.shots += 1  # add to total number of shots
+            player.accuracy = player.zombie_killed / player.shots  # update accuracy
+            print('Clip:', player.clip_pistol)
 
-        # create a pistol bullet and add to bullets
-        new_bullet = BulletPistol(game_settings, screen, player)
-        bullets.add(new_bullet)
+            # fire
+            player.display_firing()
 
-        # show fire frame
-        player.display_firing()
+            # reload automatically
+            # if player.clip_pistol == 0:
+            #     player.reload()
+
+        else:  # no ammo in clip, play empty sound
+            player.pisto_channel.play(player.clip_empty_sound)
 
 
 def check_events(player, bullets, game_settings, screen):
@@ -183,7 +198,7 @@ def shoot_zombie(zombies, bullets, dead_zombies, player):
             if zombie.rect.colliderect(bullet.rect):
                 # play the hitting sound effect
                 hit_sound = pygame.mixer.Sound('sfx/zombie/explode.wav')
-                hit_channel = pygame.mixer.Channel(zombie.game_settings.zombie_hit_channel)
+                hit_channel = pygame.mixer.Channel(zombie.game_settings.zombie_attack_channel)
                 hit_channel.play(hit_sound)
 
                 # remove bullets and zombies
@@ -191,7 +206,7 @@ def shoot_zombie(zombies, bullets, dead_zombies, player):
                 zombies.remove(zombie)
 
                 # create a new dead zombie and add to dead_zombies
-                new_dead_zombie = DeadZombie(zombie.angle, zombie.updated_rect, zombie.game_settings, zombie.screen)
+                new_dead_zombie = DeadZombie(zombie)
                 dead_zombies.add(new_dead_zombie)
                 
                 # update player's kill score
@@ -246,7 +261,7 @@ def welcome_screen(screen, game_settings, player):
     # https://www.dl-sounds.com/royalty-free/power-bots-loop/
 
     pygame.mixer.music.load("sfx/power_bots_loop.wav")
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.5)
 
     # key click noise:
