@@ -4,7 +4,7 @@ import math  # for calculating rotated angle
 import game_functions as gf
 
 
-class PlayerPistol:
+class Player:
     """
     This class is the default player's character class (holding a pistol)
 
@@ -26,7 +26,7 @@ class PlayerPistol:
         self.game_settings = game_settings
 
         # load character image and get its rect
-        self.image = pygame.image.load('img/player_pistol.jpg')
+        self.image = pygame.image.load(self.game_settings.player_pistol_image_path)
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
@@ -79,7 +79,6 @@ class PlayerPistol:
         self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
 
         self.pistol_reload_frame = 0
-
 
     def update(self):
         """
@@ -208,7 +207,7 @@ class PlayerPistol:
         # draw health bar
         self.screen.blit(self.heart_image, (1000, 730))  # draw heart
         pygame.draw.rect(self.screen, (0, 0, 0), (1030, 730, self.game_settings.max_health_bar_length, 20), 1)  # draw hp box
-        pygame.draw.rect(self.screen, (255, 0, 0), (1031, 731, int(self.game_settings.max_health_bar_length * self.hp / self.game_settings.max_health_point), 18))
+        pygame.draw.rect(self.screen, (255, 0, 0), (1031, 731, int(self.game_settings.max_health_bar_length * self.hp / self.game_settings.max_health_point) - 2, 18))
 
         # display ammo amount
         ammo_text_surface = gf.text_format(str(self.clip_pistol) + '/' + str(self.ammo_pistol), self.game_settings.digital_font_path, 40, (255, 230, 140))
@@ -217,4 +216,4 @@ class PlayerPistol:
         # draw reload progress bar if player is reloading
         if self.pistol_reload_frame > 0:
             pygame.draw.rect(self.screen, (0, 0, 0), (self.rect[0], self.rect[1] - 30, self.game_settings.max_reload_bar_length, 20), 1)
-            pygame.draw.rect(self.screen, (255, 230, 140), (self.rect[0] - 1, self.rect[1] - 29, int(self.game_settings.max_reload_bar_length * (1 - self.pistol_reload_frame / self.game_settings.pistol_reload_speed)), 18))
+            pygame.draw.rect(self.screen, (255, 230, 140), (self.rect[0] + 1, self.rect[1] - 29, int(self.game_settings.max_reload_bar_length * (1 - self.pistol_reload_frame / self.game_settings.pistol_reload_speed)) - 1, 18))

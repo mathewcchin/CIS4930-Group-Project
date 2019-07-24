@@ -38,13 +38,18 @@ class Settings:
         # player settings
         self.character_speed = 3
         self.character_acceleration_ratio = 5
-        self.max_health_point = 100
+        self.max_health_point = 10000
         self.max_health_bar_length = 200
-        self.allowed_margin = 20  # minimum allowed distance of player to edge 
+        self.allowed_margin = 20  # minimum allowed distance of player to edge
+
+        self.player_pistol_image_path = 'img/player_pistol.png'
+        self.player_m4_image_path = 'img/player_m4.png'
 
         # bullet_pistol settings
         self.bullet_pistol_speed = 50
         self.pistol_shooting_interval = 300  # shooting interval of pistol, in ms
+        self.bullet_pistol_min_damage = 30
+        self.bullet_pistol_max_damage = 70
 
         # weapon and ammo settings
         self.pistol = 0
@@ -70,18 +75,12 @@ class Settings:
         self.first_aid_pack_life = 200  # number of frames first aid pack stay on screen
         self.first_aid_min_amount = 10  # minimum heal amount of the pack
         self.first_aid_max_amount = 25  # maximum heal amount of the pack
-        self.first_aid_pack_drop_rate = 55  # percentage of first aid pack drop rate
+        self.first_aid_pack_drop_rate = 5  # percentage of first aid pack drop rate
 
         # zombie settings
+        self.zombie_max_health = 100
+        self.zombie_max_health_bar_length = 70
         self.zombie_image = "img/zombie.png"
-        self.zombie_death_sheet_1 = ["img/zombie_death/death_1/6.png", "img/zombie_death/death_1/5.png",
-                                     "img/zombie_death/death_1/4.png", "img/zombie_death/death_1/3.png",
-                                     "img/zombie_death/death_1/2.png", "img/zombie_death/death_1/1.png"]
-
-        self.zombie_death_sheet_2 = ["img/zombie_death/death_2/6.png", "img/zombie_death/death_2/5.png",
-                                     "img/zombie_death/death_2/4.png", "img/zombie_death/death_2/3.png",
-                                     "img/zombie_death/death_2/2.png", "img/zombie_death/death_2/1.png"]
-
         self.zombie_death_sheet_3 = ["img/zombie_death/death_3/10.png",
                                      "img/zombie_death/death_3/9.png", "img/zombie_death/death_3/8.png", "img/zombie_death/death_3/7.png",
                                      "img/zombie_death/death_3/6.png", "img/zombie_death/death_3/5.png", "img/zombie_death/death_3/4.png",
@@ -92,14 +91,18 @@ class Settings:
 
         self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
-        self.spawn_time = 1500  # time to spawn a zombie, in milliseconds
+        self.spawn_time = 2000  # time to spawn a zombie, in milliseconds
 
         self.zombie_damage = 20  # max damage to player's hp (each attack)
         self.zombie_attack_interval = 1000  # attack time interval, in ms
+        self.zombie_attack_sound_path = ['sfx/zombie/zm_attack1.wav', 'sfx/zombie/zm_attack2.wav', 'sfx/zombie/zm_attack3.wav', 'sfx/zombie/zm_attack4.wav']
+        self.zombie_hit_sound_path = 'sfx/zombie/zm_hit.wav'
+        self.zombie_death_sound_path = 'sfx/zombie/explode.wav'
 
         # sound channels (playback channels)
         self.foot_step_channel = 0
         self.pistol_channel = 1
+        self.zombie_hit_channel = 2
         self.zombie_attack_channel = 3
 
         # welcome menu and game settings
