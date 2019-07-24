@@ -28,11 +28,18 @@ class Zombie(Sprite):
         self.rect.centerx = self.start_x
         self.rect.centery = self.start_y
 
+        # load zombie attack resources
+        self.attack_image = pygame.image.load('img/zombie_attack.png')
+        self.attack_angle = 0
+
         # create another pair of image and rect for rotated version, and update them
         self.rotated_image = pygame.image.load("img/zombie.jpg")
         self.updated_rect = self.rotated_image.get_rect()
         self.angle = None
         self.update()
+
+        # record the time of last attacking
+        self.last_attacking_time = 0
 
     def random_spawn_generator(self):
         """
@@ -67,6 +74,10 @@ class Zombie(Sprite):
             2. update the coordinate of zombie's rect
         :return:
         """
+        # check if zombie and player rect collide, if so don't move
+        if self.rect.colliderect(self.player.rect):
+            # return
+            pass
 
         # calculate rotate angle and get rect
         # get player's position, used as "mouse position" as in player's class
@@ -77,7 +88,12 @@ class Zombie(Sprite):
             math.atan2(self.rect.centery - player_position[1], self.rect.centerx - player_position[0]))
 
         # rotate zombie's image surface
-        self.rotated_image = pygame.transform.rotate(self.image, 180 - self.angle)
+        # use attack_image if zombie just attacked
+        if self.attack_angle != 0:
+            self.rotated_image = pygame.transform.rotate(self.attack_image, 180 - self.angle + self.attack_angle)
+            self.attack_angle -= 1
+        else:
+            self.rotated_image = pygame.transform.rotate(self.image, 180 - self.angle)
 
         # find out where to blit the rotated image
         self.updated_rect = self.rotated_image.get_rect()  # get_rect() should be recalled to get the new rect as image rotates
@@ -87,6 +103,29 @@ class Zombie(Sprite):
         # update position (moving zombie)
         self.rect.centerx -= math.cos(math.radians(self.angle)) * self.game_settings.zombie_speed
         self.rect.centery -= math.sin(math.radians(self.angle)) * self.game_settings.zombie_speed
+
+    def attack_player(self, player):
+        """
+        This function is called when player's rect and zombie's rect collide
+        -display attacking animation (?)
+        -play attack sound
+        -subtract player's hp
+        -update last attacked time
+
+        :return:
+        """
+        # rotate the attack image according to current mouse position
+        rotated_attack_image = pygame.transform.rotate(self.attack_image, 180 - self.angle)
+
+        # set attack angle, so zombie will show a sweep animation
+        self.attack_angle = 45
+
+        # subtract player's health
+        damage = random.randint(1, self.game_settings.zombie_damage)
+        player.hp -= damage
+
+        # update last attack time
+        self.last_attacking_time = pygame.time.get_ticks()
 
     def blit_zombie(self):
         """

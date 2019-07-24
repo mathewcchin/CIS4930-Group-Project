@@ -52,7 +52,10 @@ class Settings:
 
         self.zombie_speed = 3
         self.spawn_distance = 0  # distance to edge of screen, zombies are spawned outside of screen
-        self.spawn_time = 500  # time to spawn a zombie, in milliseconds
+        self.spawn_time = 2000  # time to spawn a zombie, in milliseconds
+
+        self.zombie_damage = 20  # max damage to player's hp (each attack)
+        self.zombie_attack_interval = 1000  # attack time interval, in ms
 
         # bullet_pistol settings
         self.bullet_pistol_speed = 80

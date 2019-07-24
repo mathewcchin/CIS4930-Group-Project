@@ -26,10 +26,14 @@ class PlayerPistol:
 
         # load character image and get its rect
         self.image = pygame.image.load('img/player_pistol.jpg')
-        self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
-        
+
+        # load fire resources
+        self.pistol_sound = pygame.mixer.Sound('sfx/weapons/p228.wav')
+        self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
+        self.pisto_channel = pygame.mixer.Channel(self.game_settings.pistol_channel)
+
         # get player rotation 
         mouse_position = pygame.mouse.get_pos()      
         self.angle = math.atan2(self.rect.centery - mouse_position[1], self.rect.centerx - mouse_position[0]) * 57.29
@@ -59,6 +63,10 @@ class PlayerPistol:
 
         # record the number of enemies killed
         self.zombie_killed = 0
+
+        # player health point
+        self.heart_image = pygame.image.load('img/heart.png')
+        self.hp = self.game_settings.max_health_point
 
     def update(self):
         """
@@ -110,9 +118,33 @@ class PlayerPistol:
         self.updated_rect.centery = self.rect.centery
     
     def display_firing(self):
+        # play the shooting sound at designated channel
+        self.pisto_channel.play(self.pistol_sound)
+
         # rotate the fire image according to current mouse position
-        self.rotated_fire_image = pygame.transform.rotate(self.fire_image, 180 - self.angle)
+        rotated_fire_image = pygame.transform.rotate(self.fire_image, 180 - self.angle)
+
         # blit and show the fire frame
         for i in range(30):
-          self.screen.blit(self.rotated_fire_image, self.updated_rect)
-          pygame.display.flip()
+            self.screen.blit(rotated_fire_image, self.updated_rect)
+            pygame.display.flip()
+
+        # update shooting time
+        self.last_shooting_time = pygame.time.get_ticks()
+
+    def injured(self):
+        """
+        This function is called when player is being attacked by zombie
+        -play injury sound
+        -
+        :return:
+        """
+
+    def blit_player(self):
+        # draw player, called in update_screen() function
+        self.screen.blit(self.rotated_image, self.updated_rect)
+
+        # draw health bar
+        self.screen.blit(self.heart_image, (1000, 730))  # draw heart
+        pygame.draw.rect(self.screen, (0, 0, 0), (1030, 730, self.game_settings.max_health_point, 20), 1)  # draw hp box
+        pygame.draw.rect(self.screen, (255, 0, 0), (1030, 730, self.hp, 20))
