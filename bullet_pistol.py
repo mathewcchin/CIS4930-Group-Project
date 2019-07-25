@@ -2,11 +2,12 @@ import pygame
 from pygame.sprite import Sprite
 import math  # to calculate rotated angle
 import copy
+import random
 
 
 class BulletPistol(Sprite):
     """
-    A class to manage bullets fired by player_pistol.
+    A class to manage bullets fired by pistol.
     
     """
 
@@ -46,10 +47,12 @@ class BulletPistol(Sprite):
         # 36 and 32 are results of trial and error
         self.rect.centerx = player.rect[0] + 40 * math.sin(math.radians(90) - self.angle) + 36
         self.rect.centery = player.rect[1] + 40 * math.cos(math.radians(90) - self.angle) + 32
-        
-        
+
         # bullet travel distance count
         self.traveled_distance = 0
+
+        # bullet damage
+        self.damage = random.randint(self.game_settings.bullet_pistol_min_damage, self.game_settings.bullet_pistol_max_damage)
 
     def update(self):
         """

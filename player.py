@@ -4,7 +4,7 @@ import math  # for calculating rotated angle
 import game_functions as gf
 
 
-class PlayerPistol:
+class Player:
     """
     This class is the default player's character class (holding a pistol)
 
@@ -26,7 +26,7 @@ class PlayerPistol:
         self.game_settings = game_settings
 
         # load character image and get its rect
-        self.image = pygame.image.load('img/player_pistol.jpg')
+        self.image = pygame.image.load(self.game_settings.player_pistol_image_path)
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
@@ -70,8 +70,10 @@ class PlayerPistol:
         self.ammo_pistol = self.game_settings.initial_pistol_ammo
         self.clip_pistol = self.game_settings.pistol_clip_capacity
         self.pistol_sound = pygame.mixer.Sound(self.game_settings.pistol_sound_path)
+        self.ammo_pickup_sound = pygame.mixer.Sound(self.game_settings.ammo_pickup_sound_path)
         self.clip_empty_sound = pygame.mixer.Sound(self.game_settings.clip_empty_sound_path)
         self.clip_change_sound = pygame.mixer.Sound(self.game_settings.clip_change_sound_path)
+        self.item_pickup_sound = pygame.mixer.Sound(self.game_settings.item_pickup_sound_path)
         self.pisto_channel = pygame.mixer.Channel(self.game_settings.pistol_channel)
 
         self.fire_image = pygame.image.load('img/player_pistol_fire.jpg')
@@ -86,6 +88,17 @@ class PlayerPistol:
             3. update the rotation of player's image
             
         """
+
+        # play foot step
+        self.play_foot_step()
+
+        # update player's coordinate and orientation
+        self.update_player_pos()
+
+        # count reload time and reload
+        self.count_reload_time()
+
+    def play_foot_step(self):
         # play random foot step sound while moving flag is true
         # if the character is trying to move out of the boundary, don't play sound
         if (self.moving_down and self.rect.bottom + self.game_settings.allowed_margin < self.screen_rect.bottom) or (
@@ -99,7 +112,8 @@ class PlayerPistol:
         if not self.moving_down and not self.moving_left and not self.moving_right and not self.moving_up:
             self.foot_steps_channel.stop()
 
-        # update player's coordinate, bound player within the screen 
+    def update_player_pos(self):
+        # update player's coordinate, bound player within the screen
         if self.moving_down and self.rect.bottom + self.game_settings.allowed_margin < self.screen_rect.bottom:
             self.rect.centery += self.game_settings.character_speed
 
@@ -115,18 +129,20 @@ class PlayerPistol:
         # rotate player's image
         # get mouse coordinate
         mouse_position = pygame.mouse.get_pos()
-        
-        # calculate angle using the initial rect 
-        self.angle = math.degrees(math.atan2(self.rect.centery - mouse_position[1], self.rect.centerx - mouse_position[0]))
-        
+
+        # calculate angle using the initial rect
+        self.angle = math.degrees(
+            math.atan2(self.rect.centery - mouse_position[1], self.rect.centerx - mouse_position[0]))
+
         # rotate player's image surface and store rotated image in player's object
         self.rotated_image = pygame.transform.rotate(self.image, 180 - self.angle)
 
-        # find out where to blit the rotated image (coordinate of the upper left corner), store the updated rect in player's object        
+        # find out where to blit the rotated image (coordinate of the upper left corner), store the updated rect in player's object
         self.updated_rect = self.rotated_image.get_rect()
         self.updated_rect.centerx = self.rect.centerx
         self.updated_rect.centery = self.rect.centery
 
+    def count_reload_time(self):
         # count reload time if self.pistol_reload_frame is not zero
         # this means the player is reloading
         # update player's clip number when self.pistol_reload_frame is returned to zero
@@ -177,20 +193,27 @@ class PlayerPistol:
         self.pisto_channel.play(self.clip_change_sound)
 
     def blit_player(self):
+        """
+        This function will:
+            - draw player
+            - draw health bar
+            - display ammo amount
+            - draw reload bar if player is reloading
+        :return:
+        """
         # draw player, called in update_screen() function
         self.screen.blit(self.rotated_image, self.updated_rect)
 
         # draw health bar
         self.screen.blit(self.heart_image, (1000, 730))  # draw heart
         pygame.draw.rect(self.screen, (0, 0, 0), (1030, 730, self.game_settings.max_health_bar_length, 20), 1)  # draw hp box
-        pygame.draw.rect(self.screen, (255, 0, 0), (1031, 731, int(self.game_settings.max_health_bar_length * self.hp / self.game_settings.max_health_point), 18))
+        pygame.draw.rect(self.screen, (255, 0, 0), (1031, 731, int(self.game_settings.max_health_bar_length * self.hp / self.game_settings.max_health_point) - 2, 18))
 
         # display ammo amount
         ammo_text_surface = gf.text_format(str(self.clip_pistol) + '/' + str(self.ammo_pistol), self.game_settings.digital_font_path, 40, (255, 230, 140))
-
         self.screen.blit(ammo_text_surface, (850, 720))
 
         # draw reload progress bar if player is reloading
         if self.pistol_reload_frame > 0:
             pygame.draw.rect(self.screen, (0, 0, 0), (self.rect[0], self.rect[1] - 30, self.game_settings.max_reload_bar_length, 20), 1)
-            pygame.draw.rect(self.screen, (255, 230, 140), (self.rect[0] - 1, self.rect[1] - 29, int(self.game_settings.max_reload_bar_length * (1 - self.pistol_reload_frame / self.game_settings.pistol_reload_speed)), 18))
+            pygame.draw.rect(self.screen, (255, 230, 140), (self.rect[0] + 1, self.rect[1] - 29, int(self.game_settings.max_reload_bar_length * (1 - self.pistol_reload_frame / self.game_settings.pistol_reload_speed)) - 1, 18))

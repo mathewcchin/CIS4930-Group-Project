@@ -1,6 +1,5 @@
 import pygame
 from pygame.sprite import Sprite
-import math
 import random
 import math
 from setting import Settings
@@ -13,26 +12,26 @@ class Zombie(Sprite):
     """
     # load zombie death resources as class variable to improve performance
     # images are stored separately for rotation purpose (sprite sheet does not help)
+    pygame.init()
     death_images = []
-    # seed = random.randint(1, 3)
     game_settings = Settings()
-    seed = 3
-    if seed == 1:
-        zombie_death_sheet = game_settings.zombie_death_sheet_1
-    elif seed == 2:
-        zombie_death_sheet = game_settings.zombie_death_sheet_2
-    elif seed == 3:
-        zombie_death_sheet = game_settings.zombie_death_sheet_3
+    zombie_death_sheet = game_settings.zombie_death_sheet_3
 
-    death_images = []
-
-    # load last frame of corpse
+    # load last frame of corpse (this frame is displayed longer)
     for i in range(game_settings.zombie_corpse_display_frame):
         death_images.append(pygame.image.load(zombie_death_sheet[0]))
     # load previous death frame
     for i in range(len(zombie_death_sheet)):
         for j in range(game_settings.zombie_death_frame_multiplier):
             death_images.append(pygame.image.load(zombie_death_sheet[i]))
+
+    # load sound effect
+    zombie_attack_sound = []
+    for i in range(len(game_settings.zombie_attack_sound_path)):
+        zombie_attack_sound.append(pygame.mixer.Sound(game_settings.zombie_attack_sound_path[i]))
+
+    zombie_hit_sound = pygame.mixer.Sound(game_settings.zombie_hit_sound_path)
+    zombie_death_sound = pygame.mixer.Sound(game_settings.zombie_death_sound_path)
 
     def __init__(self, game_settings, screen, player):
         super().__init__()
@@ -54,9 +53,10 @@ class Zombie(Sprite):
         # load zombie attack resources
         self.attack_image = pygame.image.load('img/zombie_attack.png')
         self.attack_angle = 0
-        self.attack_sound = pygame.mixer.Sound('sfx/zombie/attack.wav')
-        # create a channel for playing attack sounds
+
+        # create sound channels
         self.attack_channel = pygame.mixer.Channel(game_settings.zombie_attack_channel)
+        self.hit_channel = pygame.mixer.Channel(game_settings.zombie_hit_channel)
 
         # create another pair of image and rect for rotated version, and update them
         self.rotated_image = pygame.image.load("img/zombie.png")
@@ -66,6 +66,9 @@ class Zombie(Sprite):
 
         # record the time of last attacking
         self.last_attacking_time = 0
+
+        # zombie health
+        self.hp = self.game_settings.zombie_max_health
 
     def random_spawn_generator(self):
         """
@@ -96,15 +99,14 @@ class Zombie(Sprite):
     def update(self):
         """
         This method will do following:
-            1. update the rotation angle of zombie, so it faces player
-            2. update the coordinate of zombie's rect
+            1. update zombie coordinate and orientation
         :return:
         """
-        # check if zombie and player rect collide, if so don't move
-        if self.rect.colliderect(self.player.rect):
-            # return
-            pass
 
+        # update zombie's position
+        self.update_zombie_pos()
+
+    def update_zombie_pos(self):
         # calculate rotate angle and get rect
         # get player's position, used as "mouse position" as in player's class
         player_position = self.player.rect.centerx, self.player.rect.centery
@@ -140,8 +142,6 @@ class Zombie(Sprite):
 
         :return:
         """
-        # rotate the attack image according to current mouse position
-        rotated_attack_image = pygame.transform.rotate(self.attack_image, 180 - self.angle)
 
         # set attack angle, so zombie will show a sweep animation
         self.attack_angle = 45
@@ -153,15 +153,18 @@ class Zombie(Sprite):
         # update last attack time
         self.last_attacking_time = pygame.time.get_ticks()
 
-        # play attack sound
-        self.attack_channel.play(self.attack_sound)
+        # play random attack sound
+        self.attack_channel.play(self.zombie_attack_sound[random.randint(0, len(self.game_settings.zombie_attack_sound_path) - 1)])
 
     def blit_zombie(self):
         """
-        Blit the zombie to the screen
+        Blit the zombie to the screen, and its health bar
         """
         self.screen.blit(self.rotated_image, self.updated_rect)
 
+        # draw health bar above zombie: health bar box and health bar
+        pygame.draw.rect(self.screen, (0, 0, 0), (self.rect[0] + 35, self.rect[1] - 5, self.game_settings.zombie_max_health_bar_length, 10), 1)
+        pygame.draw.rect(self.screen, (18, 247, 4), (self.rect[0] + 36, self.rect[1] - 4, int(self.hp / self.game_settings.zombie_max_health * self.game_settings.zombie_max_health_bar_length) - 1, 8))
 
 class DeadZombie(Sprite):
     """

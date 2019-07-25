@@ -5,8 +5,10 @@ import random
 from pygame.sprite import Group  # for grouping multiple objects based on pygame.sprite
 from bullet_pistol import BulletPistol
 from setting import Settings
-from player import PlayerPistol
+from player import Player
 from zombie import *
+from ammo import *
+from first_aid_pack import *
 from userinfo import User
 from user_registration import *
 import pickle
@@ -27,17 +29,14 @@ def run_game(screen, game_settings, player):
 
     # create objects that will displayed on game main screen
     background = pygame.image.load("img/bg.jpg").convert_alpha()
-    # player = PlayerPistol(screen, game_settings)
 
-    # create Group() object to store bullets that was shot
+    # create Group() objects to store game objects shown on screen
     bullets_pistol = Group()
-
-    # create another Group() object to store zombies
     zombies = Group()
     last_spawn_time = pygame.time.get_ticks()  # record zombie spawn time
-
-    # create a Group() object to store dead zombies
     dead_zombies = Group()
+    pistol_ammos = Group()
+    first_aid_packs = Group()
 
     # controls game fps
     clock = pygame.time.Clock()
@@ -54,25 +53,24 @@ def run_game(screen, game_settings, player):
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
 
         # delete zombies and bullets when zombie is shot by bullet
-        shoot_zombie(zombies, bullets_pistol, dead_zombies, player)
+        shoot_zombie(zombies, bullets_pistol, dead_zombies, player, pistol_ammos, first_aid_packs)
 
         # zombie attack player
         attack_player(zombies, player)
 
-        # update player stats (rotation and position)
-        player.update()
+        # player get item
+        player_get_item(player, pistol_ammos, first_aid_packs)
 
-        # update zombie
-        zombies.update()
-
-        # update dead_zombie
-        dead_zombies.update()
-
-        # update bullets
-        bullets_pistol.update()
+        # update game objects
+        player.update()  # player's rotation and position
+        zombies.update()  # zombie's rotation and position
+        dead_zombies.update()  # decrease remaining frames of corpse display
+        bullets_pistol.update()  # bullets' rotation and position
+        pistol_ammos.update()  # decrease remaining frames of ammos
+        first_aid_packs.update()  # decrease remaining frames of first-aid-pack
 
         # update screen
-        update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies)
+        update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies, pistol_ammos, first_aid_packs)
 
         # if player is dead, break the main game loop
         if player.hp <= 0:
@@ -145,7 +143,6 @@ def check_mousedown(event, player, bullets, game_settings, screen):
             bullets.add(new_bullet)
             player.shots += 1  # add to total number of shots
             player.accuracy = player.zombie_killed / player.shots  # update accuracy
-            print('Clip:', player.clip_pistol)
 
             # fire
             player.display_firing()
@@ -193,26 +190,39 @@ def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     return pygame.time.get_ticks()
 
 
-def shoot_zombie(zombies, bullets, dead_zombies, player):
+def shoot_zombie(zombies, bullets, dead_zombies, player, pistol_ammos, first_aid_packs):
     for zombie in zombies.copy().sprites():
         for bullet in bullets.copy().sprites():
             if zombie.rect.colliderect(bullet.rect):
                 # play the hitting sound effect
-                hit_sound = pygame.mixer.Sound('sfx/zombie/explode.wav')
-                hit_channel = pygame.mixer.Channel(zombie.game_settings.zombie_attack_channel)
-                hit_channel.play(hit_sound)
+                zombie.hit_channel.play(zombie.zombie_hit_sound)
 
-                # remove bullets and zombies
+                # decrease zombie's hp and remove bullets
+                zombie.hp -= bullet.damage
                 bullets.remove(bullet)
-                zombies.remove(zombie)
 
-                # create a new dead zombie and add to dead_zombies
-                new_dead_zombie = DeadZombie(zombie)
-                dead_zombies.add(new_dead_zombie)
-                
-                # update player's kill score
-                player.zombie_killed += 1
-                print('total zombie killed:', player.zombie_killed)
+                # check if this zombie died or not
+                if zombie.hp <= 0:
+                    # play death sound and remove zombie from zombies
+                    zombie.hit_channel.play(zombie.zombie_death_sound)
+                    zombies.remove(zombie)
+
+                    # create a new dead zombie and add to dead_zombies
+                    new_dead_zombie = DeadZombie(zombie)
+                    dead_zombies.add(new_dead_zombie)
+
+                    # update player's kill score
+                    player.zombie_killed += 1
+
+                    # drop ammo
+                    if random.randint(1, 100) <= zombie.game_settings.pistol_ammo_drop_rate:
+                        new_ammo = PistolAmmo(zombie)
+                        pistol_ammos.add(new_ammo)
+
+                    # drop first aid pack
+                    if random.randint(1, 100) <= zombie.game_settings.first_aid_pack_drop_rate:
+                        new_first_aid_pack = FirstAidPack(zombie)
+                        first_aid_packs.add(new_first_aid_pack)
 
 
 def attack_player(zombies, player):
@@ -222,7 +232,7 @@ def attack_player(zombies, player):
             zombie.attack_player(player)
 
 
-def update_screen(background, player, zombies, screen, bullets, dead_zombies):
+def update_screen(background, player, zombies, screen, bullets, dead_zombies, pistol_ammos, first_aid_packs):
     """
     Redraw screens (after items on the screen are updated)
     """
@@ -250,8 +260,43 @@ def update_screen(background, player, zombies, screen, bullets, dead_zombies):
     for zombie in zombies:
         zombie.blit_zombie()
 
+    # draw each pistol ammos to screen, remove those expired
+    for pistol_ammo in pistol_ammos.copy().sprites():
+        if pistol_ammo.ammo_life <= 0:
+            pistol_ammos.remove(pistol_ammo)
+        else:
+            pistol_ammo.blit_pistol_ammo()
+
+    # draw each first aid pack to screen, remove those expired
+    for first_aid_pack in first_aid_packs.copy().sprites():
+        if first_aid_pack.pack_life <= 0:
+            first_aid_packs.remove(first_aid_pack)
+        else:
+            first_aid_pack.blit_pack()
+
     # draw the updated screen on the game window
     pygame.display.flip()
+
+
+def player_get_item(player, pistol_ammos, first_aid_packs):
+    # get pistol ammos
+    for pistol_ammo in pistol_ammos.copy().sprites():
+        if player.rect.colliderect(pistol_ammo.rect):
+            player.ammo_pistol += pistol_ammo.amount
+            player.foot_steps_channel.play(player.ammo_pickup_sound)  # play sound
+            pistol_ammos.remove(pistol_ammo)
+
+    # get first aid packs
+    for first_aid_pack in first_aid_packs.copy().sprites():
+        if player.rect.colliderect(first_aid_pack.rect):
+            # heal player
+            player.hp += first_aid_pack.heal_amount
+            if player.hp > player.game_settings.max_health_point:
+                player.hp = player.game_settings.max_health_point
+            # play sound effect
+            player.foot_steps_channel.play(player.item_pickup_sound)
+            # delete pack
+            first_aid_packs.remove(first_aid_pack)
 
 
 def welcome_screen(screen, game_settings, player):
@@ -329,7 +374,7 @@ def welcome_screen(screen, game_settings, player):
                 if event.key == pygame.K_RETURN:
                     if selected == "new game":
                         create_user(screen, game_settings)
-                        player = PlayerPistol(screen, game_settings)
+                        player = Player(screen, game_settings)
                         run_game(screen, game_settings, player)
                     if selected == "load game":
                         # list = ["mathew", "bob", "kennan", "jessica"]
