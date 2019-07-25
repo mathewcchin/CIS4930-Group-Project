@@ -772,9 +772,13 @@ def openleadtable():
 
 
 def addtoleadtable(name, score):
-    x = dict({name: score})
-    y = openleadtable()
-    y.update(x)
-    saveleadtable(y)
+   file = os.getcwd() + "leaderboard.dat"
+    if "leaderboard.dat" != file:
+        x = dict({name: score})
+        saveleadtable(x)
+    else:
+        y = openleadtable()
+        y.update({name: score})
+        saveleadtable(y)
     print("leadtable saved\n")
 
