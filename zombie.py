@@ -12,6 +12,7 @@ class Zombie(Sprite):
     """
     # load zombie death resources as class variable to improve performance
     # images are stored separately for rotation purpose (sprite sheet does not help)
+    # pygame.mixer.pre_init(44100, -16, 1, 2048)
     pygame.init()
     death_images = []
     game_settings = Settings()
@@ -45,13 +46,13 @@ class Zombie(Sprite):
         self.random_spawn_generator()
 
         # load zombie image and initial rect
-        self.image = pygame.image.load(game_settings.zombie_image)
+        self.image = pygame.image.load(game_settings.zombie_image_path)
         self.rect = self.image.get_rect()
         self.rect.centerx = self.start_x
         self.rect.centery = self.start_y
 
         # load zombie attack resources
-        self.attack_image = pygame.image.load('img/zombie_attack.png')
+        self.attack_image = pygame.image.load(self.game_settings.zombie_attack_image_path)
         self.attack_angle = 0
 
         # create sound channels
@@ -59,16 +60,19 @@ class Zombie(Sprite):
         self.hit_channel = pygame.mixer.Channel(game_settings.zombie_hit_channel)
 
         # create another pair of image and rect for rotated version, and update them
-        self.rotated_image = pygame.image.load("img/zombie.png")
+        self.rotated_image = pygame.image.load(game_settings.zombie_image_path)
         self.updated_rect = self.rotated_image.get_rect()
         self.angle = None
-        self.update()
 
         # record the time of last attacking
         self.last_attacking_time = 0
 
-        # zombie health
+        # zombie health and zombie hit slow down factor
         self.hp = self.game_settings.zombie_max_health
+        self.hit_slow_down_factor = 1  # ratio multiplied to speed, will be modified when hit by a certain kinds of bullet, will restore over time
+
+        # initialize update
+        self.update()
 
     def random_spawn_generator(self):
         """
@@ -106,6 +110,10 @@ class Zombie(Sprite):
         # update zombie's position
         self.update_zombie_pos()
 
+        # update slow down factor
+        if self.hit_slow_down_factor < 1:
+            self.hit_slow_down_factor += self.game_settings.zombie_hit_slow_down_restore_factor
+
     def update_zombie_pos(self):
         # calculate rotate angle and get rect
         # get player's position, used as "mouse position" as in player's class
@@ -129,8 +137,8 @@ class Zombie(Sprite):
         self.updated_rect.centery = self.rect.centery
 
         # update position (moving zombie)
-        self.rect.centerx -= math.cos(math.radians(self.angle)) * self.game_settings.zombie_speed
-        self.rect.centery -= math.sin(math.radians(self.angle)) * self.game_settings.zombie_speed
+        self.rect.centerx -= math.cos(math.radians(self.angle)) * self.game_settings.zombie_speed * self.hit_slow_down_factor
+        self.rect.centery -= math.sin(math.radians(self.angle)) * self.game_settings.zombie_speed * self.hit_slow_down_factor
 
     def attack_player(self, player):
         """
@@ -164,7 +172,8 @@ class Zombie(Sprite):
 
         # draw health bar above zombie: health bar box and health bar
         pygame.draw.rect(self.screen, (0, 0, 0), (self.rect[0] + 35, self.rect[1] - 5, self.game_settings.zombie_max_health_bar_length, 10), 1)
-        pygame.draw.rect(self.screen, (18, 247, 4), (self.rect[0] + 36, self.rect[1] - 4, int(self.hp / self.game_settings.zombie_max_health * self.game_settings.zombie_max_health_bar_length) - 1, 8))
+        pygame.draw.rect(self.screen, self.game_settings.DARK_GREEN, (self.rect[0] + 36, self.rect[1] - 4, int(self.hp / self.game_settings.zombie_max_health * self.game_settings.zombie_max_health_bar_length) - 1, 8))
+
 
 class DeadZombie(Sprite):
     """

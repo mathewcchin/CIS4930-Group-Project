@@ -37,7 +37,7 @@ class BulletPistol(Sprite):
         self.angle_got = copy.copy(player.angle)
         
         # load bullet image and make rotated image
-        self.image = pygame.image.load("img/bullet_pistol.png")
+        self.image = pygame.image.load(self.game_settings.bullet_pistol_image_path)
         self.rotated_image = pygame.transform.rotate(self.image, 360 - math.degrees(self.angle))
 
         # create a rect
@@ -61,7 +61,6 @@ class BulletPistol(Sprite):
         """
         self.rect.centerx += math.cos(self.angle) * self.game_settings.bullet_pistol_speed
         self.rect.centery += math.sin(self.angle) * self.game_settings.bullet_pistol_speed
-        
         
         # update traveled distance
         self.traveled_distance += self.game_settings.bullet_pistol_speed

@@ -4,8 +4,10 @@ import math  # for rotation angle calculation
 import random
 from pygame.sprite import Group  # for grouping multiple objects based on pygame.sprite
 from bullet_pistol import BulletPistol
+from bullet_m4 import BulletM4
 from setting import Settings
 from player import Player
+from player_resources import PlayerResources
 from zombie import *
 from ammo import *
 from first_aid_pack import *
@@ -13,7 +15,7 @@ from userinfo import User
 from user_registration import *
 
 
-def run_game(screen, game_settings, player):
+def run_game(screen, game_settings):
     """
     This function does following:
         -Initialize game objects
@@ -25,16 +27,20 @@ def run_game(screen, game_settings, player):
     """
 
     # create objects that will displayed on game main screen
-    background = pygame.image.load("img/bg.jpg").convert_alpha()
+    background = pygame.image.load(game_settings.background_path).convert_alpha()
 
     # create Group() objects to store game objects shown on screen
-    bullets_pistol = Group()
+    bullets = Group()
     zombies = Group()
     last_spawn_time = pygame.time.get_ticks()  # record zombie spawn time
     dead_zombies = Group()
-    pistol_ammos = Group()
+    ammos = Group()
     first_aid_packs = Group()
 
+    # player object
+    player_resources = PlayerResources(game_settings)
+    player = Player(screen, game_settings, bullets, player_resources)
+    
     # controls game fps
     clock = pygame.time.Clock()
 
@@ -44,34 +50,51 @@ def run_game(screen, game_settings, player):
         clock.tick(game_settings.FPS)
 
         # check event
-        check_events(player, bullets_pistol, game_settings, screen)
+        check_events(player, bullets, game_settings, screen)
 
         # generate zombies
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
 
         # delete zombies and bullets when zombie is shot by bullet
-        shoot_zombie(zombies, bullets_pistol, dead_zombies, player, pistol_ammos, first_aid_packs)
+        shoot_zombie(zombies, bullets, dead_zombies, player, ammos, first_aid_packs)
 
         # zombie attack player
         attack_player(zombies, player)
 
         # player get item
-        player_get_item(player, pistol_ammos, first_aid_packs)
+        player_get_item(player, ammos, first_aid_packs)
 
         # update game objects
         player.update()  # player's rotation and position
         zombies.update()  # zombie's rotation and position
         dead_zombies.update()  # decrease remaining frames of corpse display
-        bullets_pistol.update()  # bullets' rotation and position
-        pistol_ammos.update()  # decrease remaining frames of ammos
+        bullets.update()  # bullets' rotation and position
+        ammos.update()  # decrease remaining frames of ammos
         first_aid_packs.update()  # decrease remaining frames of first-aid-pack
 
         # update screen
-        update_screen(background, player, zombies, screen, bullets_pistol, dead_zombies, pistol_ammos, first_aid_packs)
+        update_screen(background, player, zombies, screen, bullets, dead_zombies, ammos, first_aid_packs)
 
         # if player is dead, break the main game loop
         if player.hp <= 0:
             break
+
+        # check how many zombies player killed, increase difficulty
+        if player.zombie_killed > 120:
+            game_settings.spawn_time = 500
+        elif player.zombie_killed > 75:
+            game_settings.spawn_time = 1000
+        elif player.zombie_killed > 25:
+            game_settings.spawn_time = 1500
+        elif player.zombie_killed > 10:
+            game_settings.spawn_time = 2500
+
+    game_result = dict()
+    game_result["zombie killed"] = player.zombie_killed
+    game_result["accuracy"] = player.accuracy
+
+    print(game_result)
+    return game_result
 
 
 def check_keydown_events(event, player):
@@ -93,8 +116,29 @@ def check_keydown_events(event, player):
 
     if event.key == pygame.K_r:
         # reload
-        if player.clip_pistol < player.game_settings.pistol_clip_capacity and player.ammo_pistol > 0:
+        if player.current_weapon == player.game_settings.pistol and player.clip_pistol < player.game_settings.pistol_clip_capacity and player.ammo_pistol > 0:
             player.reload()
+
+        if player.current_weapon == player.game_settings.m4 and player.clip_m4 < player.game_settings.m4_clip_capacity and player.ammo_m4 > 0:
+            player.reload()
+
+        if player.current_weapon == player.game_settings.awp and player.clip_awp < player.game_settings.awp_clip_capacity and player.ammo_awp > 0:
+            player.reload()
+
+    if event.key == pygame.K_1:
+        # change weapon to pistol
+        if player.reload_frame == 0:
+            player.current_weapon = player.game_settings.pistol
+
+    if event.key == pygame.K_2:
+        # change weapon to m4
+        if player.reload_frame == 0:
+            player.current_weapon = player.game_settings.m4
+
+    if event.key == pygame.K_3:
+        # change weapon to m4
+        if player.reload_frame == 0:
+            player.current_weapon = player.game_settings.awp
 
 
 def check_keyup_events(event, player):
@@ -132,24 +176,23 @@ def check_mousedown(event, player, bullets, game_settings, screen):
     """
 
     # left click
-    if event.button == 1 and pygame.time.get_ticks() - player.last_shooting_time >= game_settings.pistol_shooting_interval and not is_mouse_in_player(
-            player) and player.pistol_reload_frame == 0:
-        if player.clip_pistol > 0:
-            # create a pistol bullet and add to bullets
-            new_bullet = BulletPistol(game_settings, screen, player)
-            bullets.add(new_bullet)
-            player.shots += 1  # add to total number of shots
-            player.accuracy = player.zombie_killed / player.shots  # update accuracy
+    if event.button == 1:
+        player.fire()
 
-            # fire
-            player.display_firing()
+    # wheel scroll forward: change weapon
+    if event.button == 4 and player.reload_frame == 0:
+        player.current_weapon = (player.current_weapon + 1) % player.game_settings.weapon_number
 
-            # reload automatically
-            # if player.clip_pistol == 0:
-            #     player.reload()
+    # wheel scroll forward: change weapon
+    if event.button == 5 and player.reload_frame == 0:
+        player.current_weapon = (player.current_weapon - 1) % player.game_settings.weapon_number
 
-        else:  # no ammo in clip, play empty sound
-            player.pisto_channel.play(player.clip_empty_sound)
+
+def check_mouseup(event, player):
+    # left click
+    if event.button == 1:
+        player.auto_shooting = False
+        player.auto_reload_flag = True
 
 
 def check_events(player, bullets, game_settings, screen):
@@ -173,6 +216,9 @@ def check_events(player, bullets, game_settings, screen):
         if event.type == pygame.MOUSEBUTTONDOWN:
             check_mousedown(event, player, bullets, game_settings, screen)
 
+        if event.type == pygame.MOUSEBUTTONUP:
+            check_mouseup(event, player)
+
 
 def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     # if time interval is less than spawn time, do nothing
@@ -187,16 +233,24 @@ def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
     return pygame.time.get_ticks()
 
 
-def shoot_zombie(zombies, bullets, dead_zombies, player, pistol_ammos, first_aid_packs):
+def shoot_zombie(zombies, bullets, dead_zombies, player, ammos, first_aid_packs):
     for zombie in zombies.copy().sprites():
         for bullet in bullets.copy().sprites():
-            if zombie.rect.colliderect(bullet.rect):
-                # play the hitting sound effect
+            if zombie.rect.colliderect(bullet.rect) and rect_center_distance(bullet.rect, zombie.rect) <= bullet.game_settings.bullet_awp_damage_distance:
+                # play the hitting sound effect and count hit
                 zombie.hit_channel.play(zombie.zombie_hit_sound)
+                if bullet.damage == bullet.original_damage:
+                    player.zombie_hit += 1
 
-                # decrease zombie's hp and remove bullets
-                zombie.hp -= bullet.damage
-                bullets.remove(bullet)
+                # decrease zombie's hp and bullet's damage
+                # if bullet damage is zero, remove it
+                zm_hp = zombie.hp
+                zombie.hp -= bullet.damage  # damage zombie
+                zombie.hit_slow_down_factor *= bullet.slow_down_factor  # slow down zombie
+
+                bullet.damage -= zm_hp  # decrease bullet damage and remove weak bullet
+                if bullet.damage <= 20:
+                    bullets.remove(bullet)
 
                 # check if this zombie died or not
                 if zombie.hp <= 0:
@@ -214,12 +268,24 @@ def shoot_zombie(zombies, bullets, dead_zombies, player, pistol_ammos, first_aid
                     # drop ammo
                     if random.randint(1, 100) <= zombie.game_settings.pistol_ammo_drop_rate:
                         new_ammo = PistolAmmo(zombie)
-                        pistol_ammos.add(new_ammo)
+                        ammos.add(new_ammo)
+
+                    if random.randint(1, 100) <= zombie.game_settings.m4_ammo_drop_rate:
+                        new_ammo = M4Ammo(zombie)
+                        ammos.add(new_ammo)
+
+                    if random.randint(1, 100) <= zombie.game_settings.awp_ammo_drop_rate:
+                        new_ammo = AwpAmmo(zombie)
+                        ammos.add(new_ammo)
 
                     # drop first aid pack
                     if random.randint(1, 100) <= zombie.game_settings.first_aid_pack_drop_rate:
                         new_first_aid_pack = FirstAidPack(zombie)
                         first_aid_packs.add(new_first_aid_pack)
+
+
+def rect_center_distance(rect_a, rect_b):
+    return math.sqrt(pow((rect_a.centerx - rect_b.centerx), 2) + pow((rect_a.centery - rect_b.centery), 2))
 
 
 def attack_player(zombies, player):
@@ -250,19 +316,12 @@ def update_screen(background, player, zombies, screen, bullets, dead_zombies, pi
         else:
             dead_zombie.blit_death_frame()
 
-    # draw player's character to screen
-    player.blit_player()
-
-    # draw each zombie to screen
-    for zombie in zombies:
-        zombie.blit_zombie()
-
-    # draw each pistol ammos to screen, remove those expired
+    # draw each ammo to screen, remove those expired
     for pistol_ammo in pistol_ammos.copy().sprites():
         if pistol_ammo.ammo_life <= 0:
             pistol_ammos.remove(pistol_ammo)
         else:
-            pistol_ammo.blit_pistol_ammo()
+            pistol_ammo.blit_ammo()
 
     # draw each first aid pack to screen, remove those expired
     for first_aid_pack in first_aid_packs.copy().sprites():
@@ -271,17 +330,30 @@ def update_screen(background, player, zombies, screen, bullets, dead_zombies, pi
         else:
             first_aid_pack.blit_pack()
 
+    # draw each zombie to screen
+    for zombie in zombies:
+        zombie.blit_zombie()
+
+    # draw player's character to screen
+    player.blit_player()
+
     # draw the updated screen on the game window
     pygame.display.flip()
 
 
-def player_get_item(player, pistol_ammos, first_aid_packs):
+def player_get_item(player, ammos, first_aid_packs):
     # get pistol ammos
-    for pistol_ammo in pistol_ammos.copy().sprites():
-        if player.rect.colliderect(pistol_ammo.rect):
-            player.ammo_pistol += pistol_ammo.amount
+    for ammo in ammos.copy().sprites():
+        if player.rect.colliderect(ammo.rect):
+            if ammo.ammo_type == player.game_settings.pistol:
+                player.ammo_pistol += ammo.amount
+            if ammo.ammo_type == player.game_settings.m4:
+                player.ammo_m4 += ammo.amount
+            if ammo.ammo_type == player.game_settings.awp:
+                player.ammo_awp += ammo.amount
+
             player.foot_steps_channel.play(player.ammo_pickup_sound)  # play sound
-            pistol_ammos.remove(pistol_ammo)
+            ammos.remove(ammo)
 
     # get first aid packs
     for first_aid_pack in first_aid_packs.copy().sprites():
@@ -363,8 +435,9 @@ def welcome_screen(screen, game_settings, player):
                 if event.key == pygame.K_RETURN:
                     if selected == "new game":
                         create_user(screen, game_settings)
-                        player = Player(screen, game_settings)
-                        run_game(screen, game_settings, player)
+                        # run_game() will return a dictionary containing any data you need
+                        # to store in user file
+                        game_result = run_game(screen, game_settings)
 
                     if selected == "load game":
                         #list = ["mathew", "bob", "kennan", "jessica"]
@@ -423,7 +496,7 @@ def text_format(message, textFont, textSize, textColor):
 
 def user_settings(screen, game_settings):
     # create objects that will displayed on game main screen
-    background = pygame.image.load("img/bg.jpg")
+    background = pygame.image.load(game_settings.background_path)
 
     while True:
         screen.blit(background, (0, 0))
@@ -483,7 +556,7 @@ def user_settings(screen, game_settings):
 
 def pause_game(screen, game_settings, player):
     # draws background
-    background = pygame.image.load("img/bg.jpg")
+    background = pygame.image.load(game_settings.background_path)
 
     # in-game fx sound for whenever the user presses the up or down arrow key
     key_sound = pygame.mixer.Sound('sfx/key_sound.wav')
@@ -589,7 +662,7 @@ def pause_game(screen, game_settings, player):
 
 def create_user(screen, game_settings):
     screenSize(game_settings.screen_width, game_settings.screen_height)
-    setBackgroundImage('img/bg.jpg')
+    setBackgroundImage(game_settings.background_path)
 
     titleLabel = makeLabel("New Player Registration", 80, 100, 100, game_settings.color_black,
                            game_settings.font, "clear")
@@ -616,7 +689,7 @@ def create_user(screen, game_settings):
 
 
 def saved_user(screen, game_settings, player):
-    background = pygame.image.load("img/bg.jpg")
+    background = pygame.image.load(game_settings.background_path)
 
     saved = 0
     while True:
@@ -661,7 +734,7 @@ def saved_user(screen, game_settings, player):
 
 
 def load_user(screen, game_settings):  # user_info
-    background = pygame.image.load("img/bg.jpg")
+    background = pygame.image.load(game_settings.background_path)
 
     while True:
         screen.blit(background, (0, 0))
