@@ -692,8 +692,7 @@ def create_user(screen, game_settings):
         create_user(screen, game_settings)
 
     else:
-        new_user.name = entry
-        new_user.save()
+        savegame(entry, new_user)
 
     pygame.display.update()
 
