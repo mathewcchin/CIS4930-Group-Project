@@ -35,12 +35,12 @@ Game resources, including images, sounds, etc.
 * control of player by WASD keys added 
 * rotate and aim by mouse has been added
 * sound effect added (foot steps and pistol shoot)
+* bullet has been added
+* enemy & enemy health bar has been added
+* kill enemy by bullet 
+* player health bar has been added
 
 ## Plan
-* add bullet
-* add enemy & enemy health bar
-* kill enemy by bullet 
-* add player health bar
 * enemy can harm player by melee or ranged attack
 * utilize a database to design a player profile and achievement system 
 * design game menu (example: setting, create user profile, change user profile, view achievements, etc)
