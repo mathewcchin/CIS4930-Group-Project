@@ -8,6 +8,7 @@ class User:
         self.user_list = list()
         self.highscore = 0
         self.score = 0
+        self.accuracy = 0.0
 
     def get_username(self):
         return self.name
