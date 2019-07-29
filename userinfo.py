@@ -9,6 +9,9 @@ class User:
         self.highscore = 0
         self.score = 0
 
+    def get_username(self):
+        return self.name
+
     def show_score(self):
         return self.score
 
@@ -27,9 +30,8 @@ class User:
         current_dir = os.getcwd() + "/users"
         for file in os.listdir(current_dir):
             if file == username:
-                return 1
-
-        return 0
+                return True
+        return False
 
     def show_users(self):
         current_dir = os.getcwd() + "/users"
@@ -38,3 +40,5 @@ class User:
             self.user_list.append(file)
 
         return self.user_list
+
+

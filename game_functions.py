@@ -8,13 +8,12 @@ from userinfo import User
 from user_registration import *
 import pickle
 import os
-import tkinter as tkr
 
 
 leadtable = dict()
 
 
-def run_game(screen, game_settings):
+def run_game(screen, game_settings, username):
     """
     This function does following:
         -Initialize game objects
@@ -49,7 +48,7 @@ def run_game(screen, game_settings):
         clock.tick(game_settings.FPS)
 
         # check event
-        check_events(player, bullets, game_settings, screen)
+        check_events(player, bullets, game_settings, screen, username)
 
         # generate zombies
         last_spawn_time = spawn_zombies(zombies, player, game_settings, screen, last_spawn_time)
@@ -193,7 +192,7 @@ def check_mouseup(event, player):
         player.auto_reload_flag = True
 
 
-def check_events(player, bullets, game_settings, screen):
+def check_events(player, bullets, game_settings, screen, username):
     """
     Check the broad category and call corresponding methods to do the specific work
     """
@@ -206,7 +205,7 @@ def check_events(player, bullets, game_settings, screen):
 
             # Implementation of a pause function:
             if event.key == pygame.K_ESCAPE:
-                pause_game(screen, game_settings,player)
+                pause_game(screen, game_settings, player, username)
 
         if event.type == pygame.KEYUP:
             check_keyup_events(event, player)
@@ -234,7 +233,8 @@ def spawn_zombies(zombies, player, game_settings, screen, last_spawn_time):
 def shoot_zombie(zombies, bullets, dead_zombies, player, ammos, first_aid_packs):
     for zombie in zombies.copy().sprites():
         for bullet in bullets.copy().sprites():
-            if zombie.rect.colliderect(bullet.rect) and rect_center_distance(bullet.rect, zombie.rect) <= bullet.game_settings.bullet_awp_damage_distance:
+            if zombie.rect.colliderect(bullet.rect) and rect_center_distance(bullet.rect,
+                                                                             zombie.rect) <= bullet.game_settings.bullet_awp_damage_distance:
                 # play the hitting sound effect and count hit
                 zombie.hit_channel.play(zombie.zombie_hit_sound)
                 if bullet.damage == bullet.original_damage:
@@ -288,7 +288,8 @@ def rect_center_distance(rect_a, rect_b):
 
 def attack_player(zombies, player):
     for zombie in zombies.sprites():
-        if zombie.rect.colliderect(player.rect) and pygame.time.get_ticks() - zombie.last_attacking_time >= player.game_settings.zombie_attack_interval:
+        if zombie.rect.colliderect(
+                player.rect) and pygame.time.get_ticks() - zombie.last_attacking_time >= player.game_settings.zombie_attack_interval:
             # attack player
             zombie.attack_player(player)
 
@@ -440,10 +441,9 @@ def welcome_screen(screen, game_settings):
 
                 if event.key == pygame.K_RETURN:
                     if selected == "new game":
-                        create_user(screen, game_settings)
-                        run_game(screen, game_settings)
+                        username = create_user(screen, game_settings)
+                        run_game(screen, game_settings, username)
                     if selected == "load game":
-                        # list = ["mathew", "bob", "kennan", "jessica"]
                         load_user(screen, game_settings)
                     if selected == "leaderboard":
                         leaderboard(screen, game_settings)
@@ -564,7 +564,7 @@ def user_settings(screen, game_settings):
         pygame.display.flip()
 
 
-def pause_game(screen, game_settings, player):
+def pause_game(screen, game_settings, player, username):
     # draws background
     background = pygame.image.load(game_settings.background_path)
 
@@ -620,11 +620,11 @@ def pause_game(screen, game_settings, player):
 
                 if event.key == pygame.K_RETURN:
                     if selected == "Save Game":
-                        saved_user(screen, game_settings, player)
+                        saved_user(screen, game_settings, player, username)
                     elif selected == "Game Settings":
                         user_settings(screen, game_settings)
                     elif selected == "Return to Main Menu":
-                        welcome_screen(screen, game_settings, player)
+                        welcome_screen(screen, game_settings)
                     elif selected == "Exit Game":
                         sys.exit()
 
@@ -696,32 +696,30 @@ def create_user(screen, game_settings):
 
     pygame.display.update()
 
+    return entry
 
-def saved_user(screen, game_settings, player):
+
+def saved_user(screen, game_settings, player, user):
     background = pygame.image.load(game_settings.background_path)
 
     saved = 0
-    while True:
+    temp_user = User()
 
+    while True:
         screen.blit(background, (0, 0))
+
         # creating player instruction
-        instructions = text_format("Please Select Gamer Name to Save:", game_settings.font, 60,
+        instructions = text_format("Press Enter to Save progress:", game_settings.font, 60,
                                    game_settings.color_black)
         instructions_rect = instructions.get_rect()
         screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
 
-        username = User()
-        userList = username.show_users()
-        username.add_score(player.zombie_killed)
-        #print(username.show_score())
-        #print(username.show_highscore())
-        pixel_space = 240
-        for user in userList:
-            load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
-            load_gamer_rect = instructions.get_rect()
-            screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
-            pixel_space += 60
-            #addtoleadtable(user, username.show_highscore())
+
+        load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
+        load_gamer_rect = instructions.get_rect()
+        screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), 240))
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -732,51 +730,72 @@ def saved_user(screen, game_settings, player):
 
                 if event.key == pygame.K_RETURN:
                     saved = 1
+                    
+                    # Save users progress here!!!!!
+                    # existing_user=loadgame(User.get_username(user), user)
+                    # existing_user.add_score(player.zombie_killed)
+
 
         if saved == 1:
-            save_confirmation = text_format("<User> progress was successfully saved.", game_settings.font,
-                                            40, game_settings.color_white)
+            save_confirmation = text_format(user + " progress was successfully saved.",
+                                            game_settings.font, 40, game_settings.color_white)
             save_confirmation_rect = save_confirmation.get_rect()
             screen.blit(save_confirmation, (game_settings.screen_width / 3 - (save_confirmation_rect[2] / 3),
-                                            600))
+                                          600))
+
         pygame.display.update()
 
 
 def load_user(screen, game_settings):  # user_info
-    background = pygame.image.load(game_settings.background_path)
+
+    screenSize(game_settings.screen_width, game_settings.screen_height)
+    setBackgroundImage(game_settings.background_path)
 
 
-    while True:
-        screen.blit(background, (0, 0))
+    instruction = makeLabel("Please ENTER Gamer Name to Load: ", 50, 100, 100, game_settings.color_black,
+                                 game_settings.font, "clear")
+    showLabel(instruction)
 
-        # creating player instruction
-        instructions = text_format("Please Select Gamer Name to Load:", game_settings.font, 60,
-                                   game_settings.color_black)
-        instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
+    username = User()
+    userList = username.show_users()
 
-        username = User()
-        userList = username.show_users()
+    pixel_x_size = 100
+    pixel_y_size = 240
+    for user in userList:
+        if pixel_y_size >= 500:
+            pixel_x_size += 250
+            pixel_y_size = 240
+            display_user = makeLabel(user, 40, pixel_x_size, pixel_y_size, game_settings.color_black,
+                                     game_settings.font, "clear")
+            showLabel(display_user)
 
-        pixel_space = 240
-        for user in userList:
-            load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
-            load_gamer_rect = instructions.get_rect()
-            screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
-            pixel_space += 60
+            pixel_y_size += 60
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
+        else:
+            display_user = makeLabel(user, 40, pixel_x_size, pixel_y_size, game_settings.color_black,
+                                     game_settings.font, "clear")
+            showLabel(display_user)
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    return
+            pixel_y_size += 60
 
-                if event.key == pygame.K_RETURN:
-                    pass
 
-        pygame.display.update()
+    instructionLabel = makeLabel("Player Name: ", 40, 100, 600, game_settings.color_black,
+                                 game_settings.font, "clear")
+    showLabel(instructionLabel)  # makes label appear on the screen
+    # parameters are in the order x,y,case,prompt,maxlen of characters that can be typed, font size
+    # if max len set to 0 any amount of characters can be typed
+    wordBox = makeTextBox(420, 600, 300, 0, "Enter text here", 30, 24)
+    showTextBox(wordBox)  # makes the text box appear on the screen
+    entry = textBoxInput(wordBox)  # user input will be stored in entry
+
+    name = User()
+    if name.check_user(entry):
+        run_game(screen, game_settings, entry)
+
+    else:
+        load_user(screen, game_settings)
+
+    pygame.display.update()
 
 
 def leaderboard(screen, game_settings):  # user_info
@@ -784,9 +803,9 @@ def leaderboard(screen, game_settings):  # user_info
     leadtable = openleadtable()
     while True:
         screen.blit(background, (0, 0))
-            # creating player instruction
+        # creating player instruction
         instructions = text_format("Leaderboard:", game_settings.font, 60,
-                                       game_settings.color_black)
+                                   game_settings.color_black)
         instructions_rect = instructions.get_rect()
         screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
         pixel_space = 240
@@ -810,7 +829,7 @@ def leaderboard(screen, game_settings):  # user_info
 
 
 def savegame(filetag, user):
-    current_dir = os.getcwd() + "\\users"
+    current_dir = os.getcwd() + "/users"
     file_to_open = os.path.join(current_dir, (filetag + ".dat"))
     user_file = open(file_to_open, "wb")
     pickle.dump(user, user_file)
@@ -846,4 +865,3 @@ def addtoleadtable(name, score):
         y.update({name: score})
         saveleadtable(y)
     print("leadtable saved\n")
-
