@@ -10,9 +10,6 @@ import pickle
 import os
 
 
-leadtable = dict()
-
-
 def run_game(screen, game_settings, username):
     """
     This function does following:
@@ -86,12 +83,6 @@ def run_game(screen, game_settings, username):
             game_settings.spawn_time = 1500
         elif player.zombie_killed > 10:
             game_settings.spawn_time = 2500
-
-    game_result = dict()
-    game_result["zombie killed"] = player.zombie_killed
-    game_result["accuracy"] = player.accuracy
-    print(game_result)
-    return game_result
 
 
 def check_keydown_events(event, player):
@@ -692,6 +683,7 @@ def create_user(screen, game_settings):
         create_user(screen, game_settings)
 
     else:
+        addtoleadtable(entry, 0)
         savegame(entry, new_user)
 
     pygame.display.update()
@@ -713,13 +705,9 @@ def saved_user(screen, game_settings, player, user):
                                    game_settings.color_black)
         instructions_rect = instructions.get_rect()
         screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 125))
-
-
         load_gamer = text_format(user, game_settings.font, 45, game_settings.color_black)
         load_gamer_rect = instructions.get_rect()
         screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), 240))
-
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -730,12 +718,10 @@ def saved_user(screen, game_settings, player, user):
 
                 if event.key == pygame.K_RETURN:
                     saved = 1
-                    
-                    # Save users progress here!!!!!
-                    # existing_user=loadgame(User.get_username(user), user)
-                    # existing_user.add_score(player.zombie_killed)
-
-
+                    existing_user = loadgame(user, temp_user)
+                    existing_user.add_score(player.zombie_killed)
+                    addtoleadtable(user, existing_user.show_score())
+                    savegame(user, temp_user)
         if saved == 1:
             save_confirmation = text_format(user + " progress was successfully saved.",
                                             game_settings.font, 40, game_settings.color_white)
@@ -750,8 +736,6 @@ def load_user(screen, game_settings):  # user_info
 
     screenSize(game_settings.screen_width, game_settings.screen_height)
     setBackgroundImage(game_settings.background_path)
-
-
     instruction = makeLabel("Please ENTER Gamer Name to Load: ", 50, 100, 100, game_settings.color_black,
                                  game_settings.font, "clear")
     showLabel(instruction)
@@ -804,17 +788,22 @@ def leaderboard(screen, game_settings):  # user_info
     while True:
         screen.blit(background, (0, 0))
         # creating player instruction
-        instructions = text_format("Leaderboard:", game_settings.font, 60,
+        instructions = text_format("Leaderboard:", game_settings.font, 100,
                                    game_settings.color_black)
         instructions_rect = instructions.get_rect()
-        screen.blit(instructions, (game_settings.screen_width / 3 - (instructions_rect[2] / 3), 115))
+        screen.blit(instructions, (game_settings.screen_width / 6 - (instructions_rect[2] / 6), 115))
         pixel_space = 240
-        for key, value in sorted(leadtable.items()):
-            statement = key + " . . . . . . . . . . " + str(value)
-            load_gamer = text_format(statement, game_settings.font, 45, game_settings.color_black)
-            load_gamer_rect = instructions.get_rect()
-            screen.blit(load_gamer, (game_settings.screen_width / 2 - (load_gamer_rect[2] / 2), pixel_space))
-            pixel_space += 60
+        count =0
+        for key, value in sorted(leadtable.items(), key = lambda kv:(kv[1],kv[0]), reverse=True):
+            if(count <=4):
+                statement = str(count+1)+".  "+key + "  . . . . . . . . . . " + str(value)
+                load_gamer = text_format(statement, game_settings.font, 60, game_settings.color_black)
+                load_gamer_rect = instructions.get_rect()
+                screen.blit(load_gamer, (game_settings.screen_width / 6 - (load_gamer_rect[2] / 6), pixel_space))
+                pixel_space += 60
+                count+=1
+            else:
+                break
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -856,12 +845,11 @@ def openleadtable():
 
 
 def addtoleadtable(name, score):
-    file = os.getcwd() + "leaderboard.dat"
+    '''file = os.getcwd() + "leaderboard.dat"
     if "leaderboard.dat" != file:
         x = dict({name: score})
         saveleadtable(x)
-    else:
-        y = openleadtable()
-        y.update({name: score})
-        saveleadtable(y)
-    print("leadtable saved\n")
+    else:'''
+    y = openleadtable()
+    y.update({name: score})
+    saveleadtable(y)
